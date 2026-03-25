@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'; 
 import 'forgot_password.dart';
+import 'package:firebase_auth/firebase_auth.dart';// import package สำหรับใช้งาน Firebase Authentication
+import 'package:google_sign_in/google_sign_in.dart';// import package สำหรับ login ผ่าน Google
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; // ใช้ Facebook login
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +22,21 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
     super.dispose();
   }
+// --------------------------google sign in function-------------------------
+    
+    // เปิดหน้าต่างให้ผู้ใช้เลือกบัญชี Google
+    Future<UserCredential> signInWithGoogle() async {
+  final provider = GoogleAuthProvider();
+  return await FirebaseAuth.instance.signInWithPopup(provider);
+}
+
+// --------------------------facebook sign in function--------------------------
+// ฟังก์ชัน Login Facebook
+Future<UserCredential> signInWithFacebook() async {
+  final provider = FacebookAuthProvider();
+  return await FirebaseAuth.instance.signInWithPopup(provider);
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -175,13 +193,21 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.google,
                 text: 'Login With Google',
-                onPressed: () {},
+                onPressed: () async{
+                  // เรียกใช้ฟังก์ชัน login ด้วย Google
+                  await signInWithGoogle();},
               ),
               const SizedBox(height: 15),
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.facebookF,
                 text: 'Login With Facebook',
-                onPressed: () {},
+                onPressed: () async {
+                  try {
+                    await signInWithFacebook();
+                  } catch (e) {
+                    print("Facebook error: $e");
+                  }
+                },
               ),
               const SizedBox(height: 15),
               _buildSocialLoginButton(
