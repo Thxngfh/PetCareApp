@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; 
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'forgot_password.dart';
-import 'package:firebase_auth/firebase_auth.dart';// import package สำหรับใช้งาน Firebase Authentication
-import 'package:google_sign_in/google_sign_in.dart';// import package สำหรับ login ผ่าน Google
+import 'package:firebase_auth/firebase_auth.dart'; // import package สำหรับใช้งาน Firebase Authentication
+import 'package:google_sign_in/google_sign_in.dart'; // import package สำหรับ login ผ่าน Google
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // ใช้ Facebook login
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,74 +26,94 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
     super.dispose();
   }
-// --------------------------google sign in function-------------------------
-    
-    // เปิดหน้าต่างให้ผู้ใช้เลือกบัญชี Google
-    Future<UserCredential> signInWithGoogle() async {
-  if (kIsWeb) {
-    // 🌐 Web
-    final provider = GoogleAuthProvider();
-    return await FirebaseAuth.instance.signInWithPopup(provider);
-  } else {
-    // 📱 Android / iOS
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  // --------------------------google sign in function-------------------------
 
-    if (googleUser == null) {
-      throw Exception("User cancelled");
+  // เปิดหน้าต่างให้ผู้ใช้เลือกบัญชี Google
+  Future<UserCredential> signInWithGoogle() async {
+    if (kIsWeb) {
+      // 🌐 Web
+      final provider = GoogleAuthProvider();
+      return await FirebaseAuth.instance.signInWithPopup(provider);
+    } else {
+      // 📱 Android / iOS
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        throw Exception("User cancelled");
+      }
+
+      final googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
     }
+  }
 
-    final googleAuth = await googleUser.authentication;
+  // --------------------------facebook sign in function--------------------------
+  // ฟังก์ชัน Login Facebook
+  Future<UserCredential> signInWithFacebook() async {
+    if (kIsWeb) {
+      // 🌐 Web
+      final provider = FacebookAuthProvider();
+      return await FirebaseAuth.instance.signInWithPopup(provider);
+    } else {
+      // 📱 Android / iOS
+      final result = await FacebookAuth.instance.login();
 
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
+      if (result.status != LoginStatus.success) {
+        throw Exception("Facebook login failed");
+      }
+
+      final accessToken = result.accessToken;
+
+      if (accessToken == null) {
+        throw Exception("No access token");
+      }
+
+      final credential = FacebookAuthProvider.credential(accessToken.token);
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    }
+  }
+
+  // --------------------------apple sign in function--------------------------
+  Future<UserCredential> signInWithApple() async {
+
+    // เปิดหน้า Login Apple
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
     );
 
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+    // สร้าง credential สำหรับ Firebase
+    final oauthCredential = OAuthProvider("apple.com").credential(
+      idToken: appleCredential.identityToken,
+      accessToken: appleCredential.authorizationCode,
+    );
+
+    // Login Firebase
+    return await FirebaseAuth.instance.signInWithCredential(oauthCredential);
   }
-}
-
-// --------------------------facebook sign in function--------------------------
-// ฟังก์ชัน Login Facebook
-Future<UserCredential> signInWithFacebook() async {
-  if (kIsWeb) {
-    // 🌐 Web
-    final provider = FacebookAuthProvider();
-    return await FirebaseAuth.instance.signInWithPopup(provider);
-  } else {
-    // 📱 Android / iOS
-    final result = await FacebookAuth.instance.login();
-
-    if (result.status != LoginStatus.success) {
-      throw Exception("Facebook login failed");
-    }
-
-    final accessToken = result.accessToken;
-
-    if (accessToken == null) {
-      throw Exception("No access token");
-    }
-
-    final credential =
-        FacebookAuthProvider.credential(accessToken.token);
-
-    return await FirebaseAuth.instance.signInWithCredential(credential);
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF8FE7FF), 
+      backgroundColor: const Color(0xFF8FE7FF),
       body: SafeArea(
-        child: SingleChildScrollView( // ป้องกันปัญหาคีย์บอร์ดบังหน้าจอ
+        child: SingleChildScrollView(
+          // ป้องกันปัญหาคีย์บอร์ดบังหน้าจอ
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              
+
               Center(
                 child: Image.asset(
                   'assets/images/logo.png',
@@ -104,7 +127,7 @@ Future<UserCredential> signInWithFacebook() async {
                 'Email',
                 style: TextStyle(
                   fontFamily: 'Fredoka',
-                  color: Color(0xFF5A7E9A), 
+                  color: Color(0xFF5A7E9A),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -115,13 +138,19 @@ Future<UserCredential> signInWithFacebook() async {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'Email Address',
-                  hintStyle: const TextStyle(color: Colors.grey, fontFamily: 'Fredoka'),
-                  prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
+                  hintStyle: const TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'Fredoka',
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.email_outlined,
+                    color: Colors.grey,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
-                    borderSide: BorderSide.none, 
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
@@ -143,8 +172,14 @@ Future<UserCredential> signInWithFacebook() async {
                 obscureText: true, // ซ่อนตัวอักษรเวลาพิมพ์รหัส
                 decoration: InputDecoration(
                   hintText: 'Password',
-                  hintStyle: const TextStyle(color: Colors.grey, fontFamily: 'Fredoka'),
-                  prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                  hintStyle: const TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'Fredoka',
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.lock_outline,
+                    color: Colors.grey,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -162,11 +197,11 @@ Future<UserCredential> signInWithFacebook() async {
                   onPressed: () {
                     // จัดการลืมรหัสผ่าน
                     Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ForgotPasswordScreen(),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ForgotPasswordScreen(),
+                      ),
+                    );
                   },
                   child: const Text(
                     'Forgot Your Password?',
@@ -183,7 +218,7 @@ Future<UserCredential> signInWithFacebook() async {
               // ปุ่ม LOGIN หลัก
               Center(
                 child: SizedBox(
-                  width: 150, 
+                  width: 150,
                   child: ElevatedButton(
                     onPressed: () {
                       // จัดการเมื่อกด Login
@@ -202,7 +237,7 @@ Future<UserCredential> signInWithFacebook() async {
                         fontFamily: 'Fredoka',
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF3B5998), 
+                        color: Color(0xFF3B5998),
                       ),
                     ),
                   ),
@@ -234,10 +269,12 @@ Future<UserCredential> signInWithFacebook() async {
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.google,
                 text: 'Login With Google',
-                onPressed: () async{
+                onPressed: () async {
                   // เรียกใช้ฟังก์ชัน login ด้วย Google
-                  await signInWithGoogle();},
+                  await signInWithGoogle();
+                },
               ),
+
               const SizedBox(height: 15),
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.facebookF,
@@ -250,12 +287,15 @@ Future<UserCredential> signInWithFacebook() async {
                   }
                 },
               ),
-              const SizedBox(height: 15),
-              _buildSocialLoginButton(
-                icon: FontAwesomeIcons.apple,
-                text: 'Login With Apple',
-                onPressed: () {},
-              ),
+
+              if (!kIsWeb && Platform.isIOS)
+                _buildSocialLoginButton(
+                  icon: FontAwesomeIcons.apple,
+                  text: 'Login With Apple',
+                  onPressed: () async {
+                    await signInWithApple();
+                  },
+                ),
               const SizedBox(height: 20),
             ],
           ),
@@ -283,10 +323,10 @@ Future<UserCredential> signInWithFacebook() async {
         ),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFF8CBD6), 
+        backgroundColor: const Color(0xFFF8CBD6),
         padding: const EdgeInsets.symmetric(vertical: 14.0),
         elevation: 0,
-        alignment: Alignment.center, 
+        alignment: Alignment.center,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
