@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>588874999889-9lsn2j6v38uotqkrt7o2375ivolql6vp.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.588874999889-9lsn2j6v38uotqkrt7o2375ivolql6vp</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDaMI4pD18_4zJ4lbddLYpwP5W4aVR6IWo</string>
+	<key>GCM_SENDER_ID</key>
+	<string>588874999889</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.pethug</string>
+	<key>PROJECT_ID</key>
+	<string>petcareapp-1af6b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>petcareapp-1af6b.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:588874999889:ios:03d423a11ca6644bcc3070</string>
+</dict>
+</plist>

@@ -3,7 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'forgot_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';// import package สำหรับใช้งาน Firebase Authentication
 import 'package:google_sign_in/google_sign_in.dart';// import package สำหรับ login ผ่าน Google
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; // ใช้ Facebook login
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb; // ใช้ Facebook login
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,15 +27,55 @@ class _LoginScreenState extends State<LoginScreen> {
     
     // เปิดหน้าต่างให้ผู้ใช้เลือกบัญชี Google
     Future<UserCredential> signInWithGoogle() async {
-  final provider = GoogleAuthProvider();
-  return await FirebaseAuth.instance.signInWithPopup(provider);
+  if (kIsWeb) {
+    // 🌐 Web
+    final provider = GoogleAuthProvider();
+    return await FirebaseAuth.instance.signInWithPopup(provider);
+  } else {
+    // 📱 Android / iOS
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    if (googleUser == null) {
+      throw Exception("User cancelled");
+    }
+
+    final googleAuth = await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
 }
 
 // --------------------------facebook sign in function--------------------------
 // ฟังก์ชัน Login Facebook
 Future<UserCredential> signInWithFacebook() async {
-  final provider = FacebookAuthProvider();
-  return await FirebaseAuth.instance.signInWithPopup(provider);
+  if (kIsWeb) {
+    // 🌐 Web
+    final provider = FacebookAuthProvider();
+    return await FirebaseAuth.instance.signInWithPopup(provider);
+  } else {
+    // 📱 Android / iOS
+    final result = await FacebookAuth.instance.login();
+
+    if (result.status != LoginStatus.success) {
+      throw Exception("Facebook login failed");
+    }
+
+    final accessToken = result.accessToken;
+
+    if (accessToken == null) {
+      throw Exception("No access token");
+    }
+
+    final credential =
+        FacebookAuthProvider.credential(accessToken.token);
+
+    return await FirebaseAuth.instance.signInWithCredential(credential);
+  }
 }
 
 
