@@ -5,6 +5,7 @@ import 'package:pethug/screens/loading_screen.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
+import 'package:pethug/screens/me.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,3 +40,4 @@ class PetHugApp extends StatelessWidget {
     );
   }
 }
+
