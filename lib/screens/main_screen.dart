@@ -17,25 +17,33 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
-  int _selectedIndex = 4;
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
+  int _selectedIndex = 3;
+
   late AnimationController _animController;
   late Animation<double> _circleAnim;
 
-  final Color appBlueColor = const Color(0xFF9FE2FB);
+  final Color appBlueColor = const Color(0xFF8FE7FF);
 
   final List<Widget> _pages = const [
-    PetScreen(), DiaryScreen(), HealthScreen(), ConsultScreen(), MeScreen(),
+    PetScreen(),
+    DiaryScreen(),
+    HealthScreen(),
+    ConsultScreen(),
+    MeScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
+
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _circleAnim = Tween<double>(begin: 4, end: 4).animate(
+
+    _circleAnim = Tween<double>(begin: 3, end: 3).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
   }
@@ -51,7 +59,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       _circleAnim = Tween<double>(
         begin: _selectedIndex.toDouble(),
         end: index.toDouble(),
-      ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeInOut));
+      ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+      );
+
       _animController.forward(from: 0);
       _selectedIndex = index;
     });
@@ -66,6 +77,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: appBlueColor,
         elevation: 0,
@@ -75,11 +87,13 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         ),
         title: Text(
           _getTitle(),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.normal),
+          style: const TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
+
       body: _pages[_selectedIndex],
+
       bottomNavigationBar: Container(
         color: appBlueColor,
         child: SafeArea(
@@ -87,13 +101,12 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             height: 65,
             child: Stack(
               children: [
-                // 🩷 วงกลมชมพูเลื่อนได้อยู่หลัง icon
                 AnimatedBuilder(
                   animation: _circleAnim,
                   builder: (context, _) {
                     final tabWidth = MediaQuery.of(context).size.width / 5;
                     return Positioned(
-                      top: 5,
+                      top: 6,
                       left: _circleAnim.value * tabWidth + (tabWidth - 36) / 2,
                       child: Container(
                         width: 36,
@@ -106,7 +119,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                     );
                   },
                 ),
-                // Icons และ labels ทับบน circle
+
                 Row(
                   children: [
                     _buildTab(0, Icons.pets, 'Pet'),
@@ -126,10 +139,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
   Widget _buildTab(int index, IconData icon, String label) {
     final isSelected = _selectedIndex == index;
+
     return Expanded(
       child: GestureDetector(
         onTap: () => _onTap(index),
-        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -144,7 +157,8 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight:
+                    isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
