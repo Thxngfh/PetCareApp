@@ -39,7 +39,7 @@ class _SymptomSelectionScreenState extends State<SymptomSelectionScreen> {
 
   final Set<String> _selected = {};
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -332,7 +332,7 @@ class AssessmentResultScreen extends StatelessWidget {
     final hasUrgentSymptom = selectedSymptoms.any((s) => urgentSymptoms.contains(s));
 
     if (hasUrgentSymptom || severity == SeverityLevel.severe) {
-      // 🔴 Severe / Urgent
+      //  Severe / Urgent
       return _ResultContent(
         heroBg: const Color(0xFFFFCDD2),
         heroIcon: Icons.warning_amber_rounded,
@@ -347,7 +347,7 @@ class AssessmentResultScreen extends StatelessWidget {
         noteBg: const Color.fromARGB(255, 255, 235, 240),
       );
     } else if (severity == SeverityLevel.moderate) {
-      // 🟡 Moderate
+      //  Moderate
       return _ResultContent(
         heroBg: const Color(0xFFFFF9C4),
         heroIcon: Icons.add_circle,
@@ -362,7 +362,7 @@ class AssessmentResultScreen extends StatelessWidget {
         noteBg: const Color.fromARGB(255, 255, 235, 240),
       );
     } else {
-      // 🔵 Mild
+      //  Mild
       return _ResultContent(
         heroBg: const Color(0xFFBFE9F5),
         heroIcon: Icons.visibility,

@@ -1,106 +1,136 @@
 import 'package:flutter/material.dart';
+import 'package:pethug/models/diary_entry.dart';
+import 'package:pethug/screens/diary_new.dart';
+import 'package:pethug/screens/diary_photo.dart';
 
-
-
-void main() {
-  runApp(const MaterialApp(home: DiaryScreen()));
-}
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
 
   @override
-  State<DiaryScreen> createState() => _DiaryScreenState();
+  DiaryScreenState createState() => DiaryScreenState();
 }
 
-class _DiaryScreenState extends State<DiaryScreen> {
-  DateTime _focusedMonth = DateTime(2026, 2);
-  int _tabIndex = 0; // 0 = Diary, 1 = Expense
+class DiaryScreenState extends State<DiaryScreen> {
+  DateTime _focusedMonth = DateTime.now();
+  int _tabIndex = 0;
+  final List<DiaryEntry> _entries = [];
+  final Color blueColor = const Color(0xFF9FE2FB);
 
-  // ตัวอย่าง diary data
-  final List<Map<String, dynamic>> _entries = [
-    {'date': DateTime(2026, 2, 14), 'note': 'Sora', 'image': null},
-    {'date': DateTime(2026, 2, 20), 'note': 'Happy', 'image': null},
-    {'date': DateTime(2026, 2, 14), 'note': 'Cute', 'image': null},
-  ];
+  void goToNewDiary() => _goToNewDiary();
 
-  void _previousMonth() {
-    setState(() {
-      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
-    });
-  }
+  void _previousMonth() => setState(() =>
+      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1));
 
-  void _nextMonth() {
-    setState(() {
-      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
-    });
-  }
+  void _nextMonth() => setState(() =>
+      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1));
 
   String _monthLabel() {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan','Feb','Mar','Apr','May','Jun',
+      'Jul','Aug','Sep','Oct','Nov','Dec'
     ];
     return '${months[_focusedMonth.month - 1]} ${_focusedMonth.year}';
   }
 
   String _dayLabel(DateTime date) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     return days[date.weekday - 1];
+  }
+
+  List<DiaryEntry> get _filteredEntries => _entries
+      .where((e) =>
+          e.date.year == _focusedMonth.year &&
+          e.date.month == _focusedMonth.month)
+      .toList()
+    ..sort((a, b) => b.date.compareTo(a.date));
+
+  void _deleteEntry(String id) =>
+      setState(() => _entries.removeWhere((e) => e.id == id));
+
+  Future<void> _goToNewDiary({DiaryEntry? existing}) async {
+    final result = await Navigator.push<DiaryEntry>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NewDiaryScreen(existingEntry: existing),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        if (existing != null) {
+          final idx = _entries.indexWhere((e) => e.id == existing.id);
+          if (idx != -1) _entries[idx] = result;
+        } else {
+          _entries.add(result);
+        }
+      });
+    }
+  }
+
+  void _confirmDelete(DiaryEntry entry) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('ลบบันทึก?'),
+        content: Text('ต้องการลบ "${entry.note}" ใช่ไหม?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ยกเลิก'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteEntry(entry.id);
+            },
+            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color blueColor = const Color(0xFF9FE2FB);
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Tab: Diary / Expense
-          Container(
-            color: Colors.white,
-            child: Row(
-              children: [
-                _buildTab('Diary', 0, blueColor),
-                _buildTab('Expense', 1, blueColor),
-              ],
-            ),
+          Row(
+            children: [
+              _buildTab('Diary', 0),
+              _buildTab('Expense', 1),
+            ],
           ),
 
           if (_tabIndex == 0) ...[
-            // Month navigator
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
                     icon: const Icon(Icons.chevron_left),
-                    onPressed: _previousMonth,
-                  ),
-                  Text(
-                    '< ${_monthLabel()} >',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
+                    onPressed: _previousMonth),
+                Text('< ${_monthLabel()} >',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                IconButton(
                     icon: const Icon(Icons.chevron_right),
-                    onPressed: _nextMonth,
-                  ),
-                ],
-              ),
+                    onPressed: _nextMonth),
+              ],
             ),
-
-            // Diary entries
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _entries.length,
-                itemBuilder: (context, index) {
-                  final entry = _entries[index];
-                  final date = entry['date'] as DateTime;
-                  return _buildEntryCard(entry, date);
-                },
-              ),
+              child: _filteredEntries.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'ยังไม่มีบันทึก\nกด + เพื่อเพิ่ม',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _filteredEntries.length,
+                      itemBuilder: (_, index) =>
+                          _buildEntryCard(_filteredEntries[index]),
+                    ),
             ),
           ],
 
@@ -111,33 +141,23 @@ class _DiaryScreenState extends State<DiaryScreen> {
         ],
       ),
 
-      // ปุ่ม + เพิ่ม diary และปุ่มรูป
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ปุ่มดูรูปทั้งหมด
-          FloatingActionButton(
-            heroTag: 'photo',
-            mini: true,
-            backgroundColor: Colors.white,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DiaryPhotoScreen()),
-              );
-            },
-            child: Icon(Icons.photo_library_outlined, color: blueColor),
+      floatingActionButton: FloatingActionButton(  // ✅ ปิดถูกต้อง
+        heroTag: 'photo',
+        mini: true,
+        backgroundColor: Colors.white,
+        elevation: 2,
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DiaryPhotoScreen(entries: _entries),
           ),
-          const SizedBox(height: 8),
-        ],
+        ),
+        child: Icon(Icons.photo_library_outlined, color: blueColor),
       ),
-
-      // ปุ่ม + เพิ่ม diary
-      persistentFooterButtons: null,
-    );
+    );  // ✅ ปิด Scaffold
   }
 
-  Widget _buildTab(String label, int index, Color blueColor) {
+  Widget _buildTab(String label, int index) {
     final isSelected = _tabIndex == index;
     return Expanded(
       child: GestureDetector(
@@ -154,301 +174,87 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 ),
               ),
             ),
-            if (isSelected)
-              Container(height: 2, color: blueColor)
-            else
-              Container(height: 2, color: Colors.transparent),
+            Container(
+                height: 2,
+                color: isSelected ? blueColor : Colors.transparent),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEntryCard(Map<String, dynamic> entry, DateTime date) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => NewDiaryScreen(existingEntry: entry),
-          ),
-        );
-      },
-      child: Container(
+  Widget _buildEntryCard(DiaryEntry entry) {
+    return Dismissible(
+      key: Key(entry.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: Colors.redAccent,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Row(
-          children: [
-            // วันที่
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _dayLabel(date),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  '${date.day}',
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF5BBFEA),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+      ),
+      onDismissed: (_) => _deleteEntry(entry.id),
+      child: GestureDetector(
+        onTap: () => _goToNewDiary(existing: entry),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_dayLabel(entry.date),
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    '${entry.date.day}',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF5BBFEA),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            // โน็ต
-            Expanded(
-              child: Text(
-                entry['note'] ?? '',
-                style: const TextStyle(fontSize: 16),
+                ],
               ),
-            ),
-            // รูป (ถ้ามี)
-            if (entry['image'] != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.memory(
-                  entry['image'],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(entry.note, style: const TextStyle(fontSize: 16)),
+              ),
+              if (entry.imageBytes != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.memory(
+                    entry.imageBytes!,
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else
+                Container(
                   width: 56,
                   height: 56,
-                  fit: BoxFit.cover,
-                ),
-              )
-            else
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.image_outlined, color: Colors.white),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ============================================================
-// หน้า New Diary (เพิ่ม/แก้ไข)
-// ============================================================
-class NewDiaryScreen extends StatefulWidget {
-  final Map<String, dynamic>? existingEntry;
-  const NewDiaryScreen({super.key, this.existingEntry});
-
-  @override
-  State<NewDiaryScreen> createState() => _NewDiaryScreenState();
-}
-
-class _NewDiaryScreenState extends State<NewDiaryScreen> {
-  final TextEditingController _noteController = TextEditingController();
-  DateTime? _selectedDate;
-  final Color blueColor = const Color(0xFF9FE2FB);
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.existingEntry != null) {
-      _noteController.text = widget.existingEntry!['note'] ?? '';
-      _selectedDate = widget.existingEntry!['date'];
-    }
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) setState(() => _selectedDate = picked);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: blueColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.undo, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('New Diary', style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Note', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-
-            // Add Note
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F7FD),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: const [
-                    Text('Add Note ', style: TextStyle(color: Colors.grey)),
-                    Icon(Icons.edit, size: 16, color: Colors.grey),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFFE8F7FD),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Measured At
-            GestureDetector(
-              onTap: _pickDate,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F7FD),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: const [
-                    Text('Measured At ', style: TextStyle(color: Colors.grey)),
-                    Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F7FD),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                _selectedDate != null
-                    ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                    : '',
-                style: const TextStyle(color: Colors.black87),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Camera / Album
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: blueColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: const Icon(Icons.camera_alt_outlined, color: Colors.white),
-                    label: const Text('Camera', style: TextStyle(color: Colors.white)),
-                    onPressed: () {},
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: const Icon(Icons.image_outlined, color: Colors.white),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: blueColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
-                    label: const Text('Album', style: TextStyle(color: Colors.white)),
-                    onPressed: () {},
-                  ),
-                ),
-              ],
-            ),
-
-            const Spacer(),
-
-            // Save
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: blueColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Save', style: TextStyle(color: Colors.white, fontSize: 16)),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.grey),
+                onPressed: () => _confirmDelete(entry),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ============================================================
-// หน้า Diary Photo (ซ้าย)
-// ============================================================
-class DiaryPhotoScreen extends StatelessWidget {
-  const DiaryPhotoScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final Color blueColor = const Color(0xFF9FE2FB);
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: blueColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Diary photo', style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-      ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 4,
-          mainAxisSpacing: 4,
-        ),
-        itemCount: 12, // placeholder
-        itemBuilder: (context, index) => Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(8),
+            ],
           ),
-          child: const Icon(Icons.image_outlined, color: Colors.white54),
         ),
       ),
     );
