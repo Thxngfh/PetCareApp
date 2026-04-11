@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'initial_symptom_check.dart';
 
 class ConsultScreen extends StatelessWidget {
   const ConsultScreen({super.key});
@@ -241,28 +242,6 @@ class _EmergencyContactCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ───────── Placeholder Screen ─────────
-
-class InitialSymptomCheckScreen extends StatelessWidget {
-  const InitialSymptomCheckScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Initial Symptom Assessment'),
-        backgroundColor: const Color(0xFFB3E5FC),
-      ),
-      body: const Center(
-        child: Text(
-          'Coming soon...',
-          style: TextStyle(fontSize: 18),
-        ),
       ),
     );
   }
