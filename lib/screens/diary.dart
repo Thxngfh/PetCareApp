@@ -67,13 +67,19 @@ class DiaryScreenState extends State<DiaryScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
+        backgroundColor: Colors.white, // เพิ่มบรรทัดนี้
         title: const Text('ลบบันทึก?'),
         content: Text('ต้องการลบ "${entry.note}" ใช่ไหม?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('ยกเลิก')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF9FE2FB)),
+            child: const Text('ยกเลิก'),
+          ),
           TextButton(
             onPressed: () { Navigator.pop(context); _deleteEntry(entry.id); },
-            child: const Text('ลบ', style: TextStyle(color: Colors.red)),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFF9FE2FB)),
+            child: const Text('ลบ'),
           ),
         ],
       ),
