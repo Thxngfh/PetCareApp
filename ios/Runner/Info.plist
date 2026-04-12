@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>ขอสิทธิ์เข้าถึงรูปภาพเพื่อเพิ่มในไดอารี่</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>ขอสิทธิ์บันทึกรูปภาพลงในคลัง</string>
+    <key>NSCameraUsageDescription</key>
+    <string>ขอสิทธิ์ใช้กล้องถ่ายรูปสัตว์เลี้ยง</string>
+	
 </dict>
 </plist>
