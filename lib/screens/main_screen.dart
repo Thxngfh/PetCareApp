@@ -4,6 +4,7 @@ import 'package:pethug/screens/diary.dart';
 import 'package:pethug/screens/health.dart';
 import 'package:pethug/screens/consult.dart';
 import 'package:pethug/screens/me.dart';
+import 'package:pethug/screens/add_reminder.dart';
 
 void main() {
   runApp(const MaterialApp(home: MainScreen()));
@@ -22,8 +23,13 @@ class _MainScreenState extends State<MainScreen>
   late AnimationController _animController;
   late Animation<double> _circleAnim;
   final Color appBlueColor = const Color(0xFF8FE7FF);
+  
   final GlobalKey<DiaryScreenState> _diaryKey = GlobalKey<DiaryScreenState>();
+  final GlobalKey<HealthScreenState> _healthKey = GlobalKey<HealthScreenState>(); 
+  
   late final List<Widget> _pages;
+
+  int notificationCount = 0;
 
   @override
   void initState() {
@@ -31,7 +37,18 @@ class _MainScreenState extends State<MainScreen>
     _pages = [
       const PetScreen(),
       DiaryScreen(key: _diaryKey),
-      const HealthScreen(),
+      
+      HealthScreen(
+        key: _healthKey,
+        onReminderDeleted: () {
+          setState(() {
+            if (notificationCount > 0) {
+              notificationCount--; 
+            }
+          });
+        },
+      ),
+      
       const ConsultScreen(),
       const MeScreen(),
     ];
@@ -39,7 +56,7 @@ class _MainScreenState extends State<MainScreen>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _circleAnim = Tween<double>(begin: 3, end: 3).animate(
+    _circleAnim = Tween<double>(begin: _selectedIndex.toDouble(), end: _selectedIndex.toDouble()).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
   }
@@ -76,14 +93,39 @@ class _MainScreenState extends State<MainScreen>
       appBar: AppBar(
         backgroundColor: appBlueColor,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.notifications_none, color: Colors.white),
-          onPressed: () {},
+        leading: Stack(
+          alignment: Alignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_none, color: Colors.white, size: 28),
+              onPressed: () {},
+            ),
+            if (notificationCount > 0)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF4D4F),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '$notificationCount',
+                    style: const TextStyle(
+                      fontFamily: 'Fredoka', 
+                      color: Colors.white, 
+                      fontSize: 10, 
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-        title: Text(_getTitle(), style: const TextStyle(color: Colors.white)),
+        title: Text(_getTitle(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka')),
         centerTitle: true,
         actions: [
-          // แก้ไขตรงนี้: ให้แสดงปุ่มเมื่ออยู่หน้า Diary (1) หรือ Health (2)
           if (_selectedIndex == 1 || _selectedIndex == 2)
             Container(
               margin: const EdgeInsets.only(right: 8),
@@ -93,21 +135,29 @@ class _MainScreenState extends State<MainScreen>
               ),
               child: IconButton(
                 icon: Icon(Icons.add, color: appBlueColor),
-                onPressed: () {
-                  // เช็คว่ากดมาจากหน้าไหน
+                onPressed: () async {
                   if (_selectedIndex == 1) {
-                    // คำสั่งสำหรับหน้า Diary
                     final diaryState = _diaryKey.currentState;
                     if (diaryState == null) return;
                     if (diaryState.currentTab == 0) {
-                      diaryState.goToNewDiary(); // tab Diary
+                      diaryState.goToNewDiary();
                     } else {
-                      diaryState.goToNewExpense(); // tab Expense
+                      diaryState.goToNewExpense();
                     }
                   } else if (_selectedIndex == 2) {
-                    // คำสั่งสำหรับหน้า Health
-                    // TODO: ใส่โค้ดสำหรับนำทางไปหน้าเพิ่มข้อมูลสุขภาพ
-                    print("กดปุ่ม + บนหน้า Health"); 
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddReminderScreen(),
+                      ),
+                    );
+
+                    if (result != null) {
+                      setState(() {
+                        notificationCount++; 
+                      });
+                      _healthKey.currentState?.addReminder(result as Map<String, dynamic>);
+                    }
                   }
                 },
               ),
@@ -161,6 +211,7 @@ class _MainScreenState extends State<MainScreen>
     final isSelected = _selectedIndex == index;
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => _onTap(index),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -170,6 +221,7 @@ class _MainScreenState extends State<MainScreen>
             Text(
               label,
               style: TextStyle(
+                fontFamily: 'Fredoka',
                 color: Colors.white,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
