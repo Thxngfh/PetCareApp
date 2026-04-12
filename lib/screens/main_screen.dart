@@ -26,17 +26,22 @@ class _MainScreenState extends State<MainScreen>
 
   final Color appBlueColor = const Color(0xFF8FE7FF);
 
-  final List<Widget> _pages = const [
-    PetScreen(),
-    DiaryScreen(),
-    HealthScreen(),
-    ConsultScreen(),
-    MeScreen(),
-  ];
+  // GlobalKey เพื่อเรียก method ใน DiaryScreen
+  final GlobalKey<DiaryScreenState> _diaryKey = GlobalKey<DiaryScreenState>();
+
+  late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+
+    _pages = [
+      const PetScreen(),
+      DiaryScreen(key: _diaryKey), // ใส่ key
+      const HealthScreen(),
+      const ConsultScreen(),
+      const MeScreen(),
+    ];
 
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -62,7 +67,6 @@ class _MainScreenState extends State<MainScreen>
       ).animate(
         CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
       );
-
       _animController.forward(from: 0);
       _selectedIndex = index;
     });
@@ -77,7 +81,6 @@ class _MainScreenState extends State<MainScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: appBlueColor,
         elevation: 0,
@@ -90,10 +93,25 @@ class _MainScreenState extends State<MainScreen>
           style: const TextStyle(color: Colors.white),
         ),
         centerTitle: true,
+        actions: [
+          if (_selectedIndex == 1)
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(Icons.add, color: appBlueColor),
+                onPressed: () => _diaryKey.currentState?.goToNewDiary(),
+              ),
+            ),
+        ],
       ),
-
-      body: _pages[_selectedIndex],
-
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Container(
         color: appBlueColor,
         child: SafeArea(
@@ -119,7 +137,6 @@ class _MainScreenState extends State<MainScreen>
                     );
                   },
                 ),
-
                 Row(
                   children: [
                     _buildTab(0, Icons.pets, 'Pet'),
@@ -139,26 +156,20 @@ class _MainScreenState extends State<MainScreen>
 
   Widget _buildTab(int index, IconData icon, String label) {
     final isSelected = _selectedIndex == index;
-
     return Expanded(
       child: GestureDetector(
         onTap: () => _onTap(index),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: isSelected ? 26 : 22,
-            ),
+            Icon(icon, color: Colors.white, size: isSelected ? 26 : 22),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 11,
-                fontWeight:
-                    isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
