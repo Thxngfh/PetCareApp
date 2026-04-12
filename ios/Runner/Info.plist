@@ -47,11 +47,11 @@
 	<true/>
 
 	<key>NSPhotoLibraryUsageDescription</key>
-    <string>ขอสิทธิ์เข้าถึงรูปภาพเพื่อเพิ่มในไดอารี่</string>
+    <string>ขอสิทธิ์เข้าถึงรูปภาพ</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>ขอสิทธิ์บันทึกรูปภาพลงในคลัง</string>
+    <string>ขอสิทธิ์บันทึกรูปภาพ</string>
     <key>NSCameraUsageDescription</key>
-    <string>ขอสิทธิ์ใช้กล้องถ่ายรูปสัตว์เลี้ยง</string>
-	
+    <string>ขอสิทธิ์ใช้กล้อง</string>
+
 </dict>
 </plist>
