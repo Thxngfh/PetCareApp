@@ -16,7 +16,7 @@ class HealthScreenState extends State<HealthScreen> {
 
   final Color textBlueColor = const Color(0xFF4C6184); 
 
-  // ฟังก์ชันรับข้อมูลจากหน้า Add
+  // ฟังก์ชันรับข้อมูลจากหน้า Add (ถูกเรียกใช้จาก MainScreen ผ่าน GlobalKey)
   void addReminder(Map<String, dynamic> data) {
     setState(() {
       remindersList.insert(0, data); 
@@ -54,7 +54,7 @@ class HealthScreenState extends State<HealthScreen> {
                 remindersList.removeAt(index); 
               });
               
-              widget.onReminderDeleted?.call(); 
+              widget.onReminderDeleted?.call(); // แจ้ง MainScreen ให้ลดตัวเลขกระดิ่ง
               
               Navigator.pop(context); 
             },
@@ -71,6 +71,8 @@ class HealthScreenState extends State<HealthScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
+          // ── ลบแถบ Header สีฟ้าออก เพราะ MainScreen มี AppBar อยู่แล้ว ──
+          
           //Tab Buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -247,7 +249,7 @@ class HealthScreenState extends State<HealthScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text('Location: varaporn vet', style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 14)),
+                    Text('Location: ${item['location'] ?? 'No location'}', style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 14)),
                   ],
                 ),
               ),

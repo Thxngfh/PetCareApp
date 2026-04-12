@@ -13,6 +13,8 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
+  // ── 1. เพิ่ม Controller สำหรับ Location ──
+  final TextEditingController _locationController = TextEditingController();
 
   final List<Map<String, dynamic>> _types = [
     {'icon': Icons.vaccines, 'label': 'vaccine'},
@@ -32,6 +34,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     _titleController.dispose();
     _dateController.dispose();
     _timeController.dispose();
+    _locationController.dispose(); // อย่าลืม dispose ด้วย
     super.dispose();
   }
 
@@ -194,6 +197,14 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                       onTap: () => _selectTime(context),
                       suffixIcon: const Icon(Icons.access_time, size: 20, color: Colors.grey),
                     ),
+                    const SizedBox(height: 16),
+
+                    // ── 2. เพิ่มช่องกรอก Location ──
+                    _buildInputField(
+                      'Location', 
+                      _locationController,
+                      suffixIcon: const Icon(Icons.location_on_outlined, size: 20, color: Colors.grey),
+                    ),
                     const SizedBox(height: 40),
 
                     Row(
@@ -213,10 +224,12 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
+                              // ── 3. ส่งค่า Location กลับไปด้วย ──
                               final newReminderData = {
                                 'title': _titleController.text.isEmpty ? 'New Reminder' : _titleController.text,
                                 'date': _dateController.text.isEmpty ? 'Not set' : _dateController.text,
                                 'time': _timeController.text.isEmpty ? '-' : _timeController.text,
+                                'location': _locationController.text.isEmpty ? 'No location' : _locationController.text,
                                 'icon': _types[_selectedTypeIndex]['icon'],
                               };
                               Navigator.pop(context, newReminderData); 
