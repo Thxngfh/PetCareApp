@@ -88,32 +88,47 @@ class DiaryScreenState extends State<DiaryScreen> {
         children: [
           Row(children: [_buildTab('Diary', 0), _buildTab('Expense', 1)]),
 
-          if (_tabIndex == 0) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          Expanded(
+            child: Stack(
               children: [
-                IconButton(icon: const Icon(Icons.chevron_left), onPressed: _previousMonth),
-                Text('< ${_monthLabel()} >', style: const TextStyle(fontWeight: FontWeight.bold)),
-                IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
+                // Tab Diary
+                Offstage(
+                  offstage: _tabIndex != 0,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(icon: const Icon(Icons.chevron_left), onPressed: _previousMonth),
+                          Text('< ${_monthLabel()} >', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
+                        ],
+                      ),
+                      Expanded(
+                        child: _filteredEntries.isEmpty
+                            ? const Center(
+                                child: Text('ยังไม่มีบันทึก\nกด + เพื่อเพิ่ม',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.grey)),
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _filteredEntries.length,
+                                itemBuilder: (_, index) => _buildEntryCard(_filteredEntries[index]),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Tab Expense — ไม่ถูก destroy เมื่อซ่อน
+                Offstage(
+                  offstage: _tabIndex != 1,
+                  child: ExpenseScreen(key: _expenseKey),
+                ),
               ],
             ),
-            Expanded(
-              child: _filteredEntries.isEmpty
-                  ? const Center(
-                      child: Text('ยังไม่มีบันทึก\nกด + เพื่อเพิ่ม',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey)),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _filteredEntries.length,
-                      itemBuilder: (_, index) => _buildEntryCard(_filteredEntries[index]),
-                    ),
-            ),
-          ],
-
-          if (_tabIndex == 1)
-            Expanded(child: ExpenseScreen(key: _expenseKey)),
+          ),
         ],
       ),
 
