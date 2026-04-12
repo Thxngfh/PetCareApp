@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:pethug/screens/pet.dart';
 import 'package:pethug/screens/diary.dart';
 import 'package:pethug/screens/health.dart';
@@ -17,37 +16,28 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen>
-    with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   int _selectedIndex = 3;
-
   late AnimationController _animController;
   late Animation<double> _circleAnim;
-
   final Color appBlueColor = const Color(0xFF8FE7FF);
-
-  // GlobalKey เพื่อเรียก method ใน DiaryScreen
   final GlobalKey<DiaryScreenState> _diaryKey = GlobalKey<DiaryScreenState>();
-
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-
     _pages = [
       const PetScreen(),
-      DiaryScreen(key: _diaryKey), // ใส่ key
+      DiaryScreen(key: _diaryKey),
       const HealthScreen(),
       const ConsultScreen(),
       const MeScreen(),
     ];
-
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-
     _circleAnim = Tween<double>(begin: 3, end: 3).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
@@ -64,9 +54,7 @@ class _MainScreenState extends State<MainScreen>
       _circleAnim = Tween<double>(
         begin: _selectedIndex.toDouble(),
         end: index.toDouble(),
-      ).animate(
-        CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
-      );
+      ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeInOut));
       _animController.forward(from: 0);
       _selectedIndex = index;
     });
@@ -88,30 +76,29 @@ class _MainScreenState extends State<MainScreen>
           icon: const Icon(Icons.notifications_none, color: Colors.white),
           onPressed: () {},
         ),
-        title: Text(
-          _getTitle(),
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text(_getTitle(), style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           if (_selectedIndex == 1)
             Container(
               margin: const EdgeInsets.only(right: 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
               child: IconButton(
                 icon: Icon(Icons.add, color: appBlueColor),
-                onPressed: () => _diaryKey.currentState?.goToNewDiary(),
+                onPressed: () {
+                  final diaryState = _diaryKey.currentState;
+                  if (diaryState == null) return;
+                  if (diaryState.currentTab == 0) {
+                    diaryState.goToNewDiary();     // tab Diary
+                  } else {
+                    diaryState.goToNewExpense();   // tab Expense
+                  }
+                },
               ),
             ),
         ],
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: Container(
         color: appBlueColor,
         child: SafeArea(
@@ -129,10 +116,7 @@ class _MainScreenState extends State<MainScreen>
                       child: Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFC0CB),
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: const BoxDecoration(color: Color(0xFFFFC0CB), shape: BoxShape.circle),
                       ),
                     );
                   },
@@ -164,14 +148,12 @@ class _MainScreenState extends State<MainScreen>
           children: [
             Icon(icon, color: Colors.white, size: isSelected ? 26 : 22),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
+            Text(label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                )),
           ],
         ),
       ),
