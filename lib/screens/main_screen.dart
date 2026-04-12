@@ -16,7 +16,8 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedIndex = 3;
   late AnimationController _animController;
   late Animation<double> _circleAnim;
@@ -51,10 +52,13 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
   void _onTap(int index) {
     setState(() {
-      _circleAnim = Tween<double>(
-        begin: _selectedIndex.toDouble(),
-        end: index.toDouble(),
-      ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeInOut));
+      _circleAnim =
+          Tween<double>(
+            begin: _selectedIndex.toDouble(),
+            end: index.toDouble(),
+          ).animate(
+            CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
+          );
       _animController.forward(from: 0);
       _selectedIndex = index;
     });
@@ -79,19 +83,31 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         title: Text(_getTitle(), style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
-          if (_selectedIndex == 1)
+          // แก้ไขตรงนี้: ให้แสดงปุ่มเมื่ออยู่หน้า Diary (1) หรือ Health (2)
+          if (_selectedIndex == 1 || _selectedIndex == 2)
             Container(
               margin: const EdgeInsets.only(right: 8),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
               child: IconButton(
                 icon: Icon(Icons.add, color: appBlueColor),
                 onPressed: () {
-                  final diaryState = _diaryKey.currentState;
-                  if (diaryState == null) return;
-                  if (diaryState.currentTab == 0) {
-                    diaryState.goToNewDiary();     // tab Diary
-                  } else {
-                    diaryState.goToNewExpense();   // tab Expense
+                  // เช็คว่ากดมาจากหน้าไหน
+                  if (_selectedIndex == 1) {
+                    // คำสั่งสำหรับหน้า Diary
+                    final diaryState = _diaryKey.currentState;
+                    if (diaryState == null) return;
+                    if (diaryState.currentTab == 0) {
+                      diaryState.goToNewDiary(); // tab Diary
+                    } else {
+                      diaryState.goToNewExpense(); // tab Expense
+                    }
+                  } else if (_selectedIndex == 2) {
+                    // คำสั่งสำหรับหน้า Health
+                    // TODO: ใส่โค้ดสำหรับนำทางไปหน้าเพิ่มข้อมูลสุขภาพ
+                    print("กดปุ่ม + บนหน้า Health"); 
                   }
                 },
               ),
@@ -116,7 +132,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                       child: Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(color: Color(0xFFFFC0CB), shape: BoxShape.circle),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFFC0CB),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     );
                   },
@@ -148,12 +167,14 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           children: [
             Icon(icon, color: Colors.white, size: isSelected ? 26 : 22),
             const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                )),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ],
         ),
       ),
