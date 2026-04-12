@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MaterialApp(home: InitialSymptomCheckScreen()));
-}
-
-
 class InitialSymptomCheckScreen extends StatelessWidget {
   const InitialSymptomCheckScreen({super.key});
 
