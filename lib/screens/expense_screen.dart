@@ -53,7 +53,6 @@ class ExpenseScreenState extends State<ExpenseScreen> {
     return '${months[_focusedMonth.month - 1]} ${_focusedMonth.year}';
   }
 
-  // public method ให้ DiaryScreen เรียกได้
   Future<void> goToNewExpense() => _goToNewExpense();
 
   Future<void> _goToNewExpense() async {
@@ -107,7 +106,7 @@ class ExpenseScreenState extends State<ExpenseScreen> {
                   ),
                 ),
                 Text(
-                  '\$ ${_totalAmount.toStringAsFixed(0)}',
+                  '฿ ${_totalAmount.toStringAsFixed(0)}',
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF5BBFEA)),
                 ),
               ],
@@ -153,7 +152,6 @@ class ExpenseScreenState extends State<ExpenseScreen> {
           ),
         ],
       ),
-      // ไม่มี FAB แล้ว
     );
   }
 
@@ -170,8 +168,10 @@ class ExpenseScreenState extends State<ExpenseScreen> {
           ),
           const SizedBox(width: 10),
           Expanded(child: Text(entry.category, style: const TextStyle(fontSize: 15))),
-          Text('\$ ${entry.amount.toStringAsFixed(0)}',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text(
+            '฿ ${entry.amount.toStringAsFixed(0)}',
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () => _deleteEntry(entry.id),

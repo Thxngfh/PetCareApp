@@ -116,6 +116,22 @@ class DiaryScreenState extends State<DiaryScreen> {
             Expanded(child: ExpenseScreen(key: _expenseKey)),
         ],
       ),
+
+      floatingActionButton: _tabIndex == 0
+          ? FloatingActionButton(
+              heroTag: 'photo',
+              mini: true,
+              backgroundColor: Colors.white,
+              elevation: 2,
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DiaryPhotoScreen(entries: _entries),
+                ),
+              ),
+              child: Icon(Icons.photo_library_outlined, color: blueColor),
+            )
+          : null,
     );
   }
 

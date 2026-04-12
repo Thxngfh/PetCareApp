@@ -51,14 +51,31 @@ class _NewDiaryScreenState extends State<NewDiaryScreen> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) setState(() => _selectedDate = picked);
-  }
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: _selectedDate,
+    firstDate: DateTime(2020),
+    lastDate: DateTime(2030),
+    builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF9FE2FB),       // สีวงกลมวันที่เลือก
+            onPrimary: Colors.white,           // สีตัวเลขในวงกลม
+            onSurface: Colors.black87,         // สีตัวเลขปกติ
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Color(0xFF9FE2FB), // สีปุ่ม Cancel/OK
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+  if (picked != null) setState(() => _selectedDate = picked);
+}
 
   void _save() {
     if (_noteController.text.trim().isEmpty) {

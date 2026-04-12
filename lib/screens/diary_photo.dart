@@ -16,6 +16,7 @@ class DiaryPhotoScreen extends StatelessWidget {
         .toList();
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: blueColor,
         elevation: 0,
