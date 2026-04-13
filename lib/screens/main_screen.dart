@@ -5,9 +5,13 @@ import 'package:pethug/screens/health.dart';
 import 'package:pethug/screens/consult.dart';
 import 'package:pethug/screens/me.dart';
 import 'package:pethug/screens/add_reminder.dart';
+import 'package:pethug/screens/add_pet.dart'; 
 
 void main() {
-  runApp(const MaterialApp(home: MainScreen()));
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false, 
+    home: MainScreen(),
+  ));
 }
 
 class MainScreen extends StatefulWidget {
@@ -19,11 +23,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
-  int _selectedIndex = 3;
+  int _selectedIndex = 0; 
   late AnimationController _animController;
   late Animation<double> _circleAnim;
   final Color appBlueColor = const Color(0xFF8FE7FF);
   
+  // สร้าง GlobalKey ให้หน้า Pet
+  final GlobalKey<PetScreenState> _petKey = GlobalKey<PetScreenState>();
   final GlobalKey<DiaryScreenState> _diaryKey = GlobalKey<DiaryScreenState>();
   final GlobalKey<HealthScreenState> _healthKey = GlobalKey<HealthScreenState>(); 
   
@@ -35,20 +41,16 @@ class _MainScreenState extends State<MainScreen>
   void initState() {
     super.initState();
     _pages = [
-      const PetScreen(),
+      PetScreen(key: _petKey), // ผูก Key ที่นี่
       DiaryScreen(key: _diaryKey),
-      
       HealthScreen(
         key: _healthKey,
         onReminderDeleted: () {
           setState(() {
-            if (notificationCount > 0) {
-              notificationCount--; 
-            }
+            if (notificationCount > 0) notificationCount--; 
           });
         },
       ),
-      
       const ConsultScreen(),
       const MeScreen(),
     ];
@@ -81,9 +83,24 @@ class _MainScreenState extends State<MainScreen>
     });
   }
 
-  String _getTitle() {
+  Widget _buildTitle() {
+    if (_selectedIndex == 0) {
+      // ดึงชื่อสัตว์เลี้ยงมาแสดงบน AppBar
+      String topName = _petKey.currentState?.hasPetData == true 
+          ? _petKey.currentState!.petName.toUpperCase() 
+          : "MY PET";
+
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(topName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24)),
+          const SizedBox(width: 4),
+          const Icon(Icons.arrow_drop_down, color: Colors.white),
+        ],
+      );
+    }
     const titles = ['Pet', 'Diary', 'Health', 'Consult', 'Me'];
-    return titles[_selectedIndex];
+    return Text(titles[_selectedIndex], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24));
   }
 
   @override
@@ -106,56 +123,53 @@ class _MainScreenState extends State<MainScreen>
                 right: 12,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFF4D4F),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(color: Color(0xFFFF4D4F), shape: BoxShape.circle),
                   child: Text(
                     '$notificationCount',
-                    style: const TextStyle(
-                      fontFamily: 'Fredoka', 
-                      color: Colors.white, 
-                      fontSize: 10, 
-                      fontWeight: FontWeight.bold
-                    ),
+                    style: const TextStyle(fontFamily: 'Fredoka', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
           ],
         ),
-        title: Text(_getTitle(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka')),
+        title: _buildTitle(),
         centerTitle: true,
         actions: [
-          if (_selectedIndex == 1 || _selectedIndex == 2)
+          if (_selectedIndex == 0 || _selectedIndex == 1 || _selectedIndex == 2)
             Container(
-              margin: const EdgeInsets.only(right: 8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
+              margin: const EdgeInsets.only(right: 16),
+              width: 38,
+              height: 38,
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
               child: IconButton(
-                icon: Icon(Icons.add, color: appBlueColor),
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.add, color: Colors.black87, size: 26), 
                 onPressed: () async {
-                  if (_selectedIndex == 1) {
-                    final diaryState = _diaryKey.currentState;
-                    if (diaryState == null) return;
-                    if (diaryState.currentTab == 0) {
-                      diaryState.goToNewDiary();
-                    } else {
-                      diaryState.goToNewExpense();
-                    }
-                  } else if (_selectedIndex == 2) {
+                  if (_selectedIndex == 0) {
+                    // เปิดหน้า AddPet
                     final result = await Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const AddReminderScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const AddPetScreen()),
                     );
-
+                    // ถ้ารับข้อมูลกลับมา สั่งอัปเดตหน้า Pet
+                    if (result != null && result is Map<String, dynamic>) {
+                      _petKey.currentState?.updatePetData(result);
+                      setState(() {}); // รีเฟรช AppBar MainScreen ด้วย
+                    }
+                  } 
+                  else if (_selectedIndex == 1) {
+                    final diaryState = _diaryKey.currentState;
+                    if (diaryState == null) return;
+                    if (diaryState.currentTab == 0) diaryState.goToNewDiary();
+                    else diaryState.goToNewExpense();
+                  } 
+                  else if (_selectedIndex == 2) {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddReminderScreen()),
+                    );
                     if (result != null) {
-                      setState(() {
-                        notificationCount++; 
-                      });
+                      setState(() => notificationCount++); 
                       _healthKey.currentState?.addReminder(result as Map<String, dynamic>);
                     }
                   }
@@ -182,10 +196,7 @@ class _MainScreenState extends State<MainScreen>
                       child: Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFC0CB),
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: const BoxDecoration(color: Color(0xFFFFC0CB), shape: BoxShape.circle),
                       ),
                     );
                   },
