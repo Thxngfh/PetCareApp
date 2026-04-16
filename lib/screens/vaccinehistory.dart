@@ -4,8 +4,6 @@ class VaccineHistoryScreen extends StatelessWidget {
   final List<Map<String, dynamic>> vaccineRecords;
 
   const VaccineHistoryScreen({super.key, required this.vaccineRecords});
-
-  // สีตามธีมแอป
   final Color appBlueColor = const Color(0xFF8FE7FF);
   final Color textBlueColor = const Color(0xFF4C6184);
   final Color cardBgColor = const Color(0xFFF0F4F7);
@@ -19,7 +17,7 @@ class VaccineHistoryScreen extends StatelessWidget {
         backgroundColor: appBlueColor,
         elevation: 0,
         centerTitle: true,
-        // ปุ่มย้อนกลับ (Undo icon)
+        //ปุ่มย้อนกลับ
         leading: IconButton(
           icon: const Icon(Icons.undo, color: Color(0xFF4C6184), size: 28),
           onPressed: () => Navigator.pop(context),
@@ -40,7 +38,7 @@ class VaccineHistoryScreen extends StatelessWidget {
     );
   }
 
-  // กรณีไม่มีประวัติวัคซีน
+  //กรณีไม่มีประวัติวัคซีน
   Widget _buildEmptyState() {
     return Center(
       child: Text(
@@ -54,7 +52,7 @@ class VaccineHistoryScreen extends StatelessWidget {
     );
   }
 
-  // รายการประวัติวัคซีน (ตาม Screenshot 02.07.38)
+  //รายการประวัติวัคซีน 
   Widget _buildVaccineList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -70,7 +68,6 @@ class VaccineHistoryScreen extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // ไอคอนเข็มฉีดยาและขวดยาในกรอบสีขาว
               Container(
                 width: 80,
                 height: 80,
@@ -80,14 +77,14 @@ class VaccineHistoryScreen extends StatelessWidget {
                 ),
                 child: Center(
                   child: Icon(
-                    Icons.vaccines, // ไอคอนวัคซีนของ Flutter
+                    Icons.vaccines, 
                     color: iconThemeColor,
                     size: 50,
                   ),
                 ),
               ),
               const SizedBox(width: 20),
-              // ข้อมูลชื่อวัคซีนและวันที่
+              //ข้อมูลชื่อวัคซีนและวันที่
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,18 +4,15 @@ class WeightHistoryScreen extends StatelessWidget {
   final List<Map<String, dynamic>> weightRecords;
 
   const WeightHistoryScreen({super.key, required this.weightRecords});
-
-  // กำหนดสีตามธีมในรูปภาพ
   final Color appBlueColor = const Color(0xFF8FE7FF);
   final Color textBlueColor = const Color(0xFF4C6184);
-  final Color cardBgColor = const Color(0xFFF0F4F7); // สีพื้นหลังเทาอ่อนของ Card
-  final Color weightIconColor = const Color(0xFF5A729A); // สีน้ำเงินของไอคอนตุ้มน้ำหนัก
+  final Color cardBgColor = const Color(0xFFF0F4F7); 
+  final Color weightIconColor = const Color(0xFF5A729A); 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // 1. ปรับ Header ให้เป็น AppBar ตามดีไซน์
       appBar: AppBar(
         backgroundColor: appBlueColor,
         elevation: 0,
@@ -35,12 +32,12 @@ class WeightHistoryScreen extends StatelessWidget {
         ),
       ),
       body: weightRecords.isEmpty
-          ? _buildEmptyState() // 2. แสดงสถานะไม่มีข้อมูล
-          : _buildHistoryList(), // 3. แสดงรายการประวัติ
+          ? _buildEmptyState() //แสดงสถานะไม่มีข้อมูล
+          : _buildHistoryList(), //แสดงรายการประวัติ
     );
   }
 
-  // Widget สำหรับหน้าว่างเปล่า
+  //Widget สำหรับหน้าว่างเปล่า
   Widget _buildEmptyState() {
     return Center(
       child: Text(
@@ -54,7 +51,7 @@ class WeightHistoryScreen extends StatelessWidget {
     );
   }
 
-  // Widget สำหรับ List ประวัติ
+  //Widget สำหรับ List ประวัติ
   Widget _buildHistoryList() {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -70,7 +67,6 @@ class WeightHistoryScreen extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // ดีไซน์ไอคอนตุ้มน้ำหนัก (Weight Scale Icon)
               Container(
                 width: 80,
                 height: 80,
@@ -82,9 +78,7 @@ class WeightHistoryScreen extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // รูปทรงของตุ้มน้ำหนัก
                       Icon(Icons.monitor_weight, color: weightIconColor, size: 60),
-                      // ข้อความ KG ตรงกลาง
                       const Padding(
                         padding: EdgeInsets.only(top: 8),
                         child: Text(
@@ -102,7 +96,7 @@ class WeightHistoryScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 20),
-              // ข้อมูลน้ำหนักและวันที่
+              //ข้อมูลน้ำหนักและวันที่
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +119,7 @@ class WeightHistoryScreen extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    // แสดง Note (เช่น weight gain) ถ้ามีข้อมูล
+                    //แสดง Note (เช่น weight gain) ถ้ามีข้อมูล
                     if (record['note'] != null && record['note'].toString().isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2),

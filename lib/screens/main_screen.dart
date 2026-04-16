@@ -28,7 +28,6 @@ class _MainScreenState extends State<MainScreen>
   late Animation<double> _circleAnim;
   final Color appBlueColor = const Color(0xFF8FE7FF);
   
-  // สร้าง GlobalKey ให้หน้า Pet
   final GlobalKey<PetScreenState> _petKey = GlobalKey<PetScreenState>();
   final GlobalKey<DiaryScreenState> _diaryKey = GlobalKey<DiaryScreenState>();
   final GlobalKey<HealthScreenState> _healthKey = GlobalKey<HealthScreenState>(); 
@@ -41,7 +40,10 @@ class _MainScreenState extends State<MainScreen>
   void initState() {
     super.initState();
     _pages = [
-      PetScreen(key: _petKey), // ผูก Key ที่นี่
+      PetScreen(
+        key: _petKey,
+        onPetDataChanged: () => setState(() {}), 
+      ),
       DiaryScreen(key: _diaryKey),
       HealthScreen(
         key: _healthKey,
@@ -71,13 +73,10 @@ class _MainScreenState extends State<MainScreen>
 
   void _onTap(int index) {
     setState(() {
-      _circleAnim =
-          Tween<double>(
-            begin: _selectedIndex.toDouble(),
-            end: index.toDouble(),
-          ).animate(
-            CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
-          );
+      _circleAnim = Tween<double>(
+        begin: _selectedIndex.toDouble(),
+        end: index.toDouble(),
+      ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeInOut));
       _animController.forward(from: 0);
       _selectedIndex = index;
     });
@@ -85,22 +84,40 @@ class _MainScreenState extends State<MainScreen>
 
   Widget _buildTitle() {
     if (_selectedIndex == 0) {
-      // ดึงชื่อสัตว์เลี้ยงมาแสดงบน AppBar
-      String topName = _petKey.currentState?.hasPetData == true 
-          ? _petKey.currentState!.petName.toUpperCase() 
-          : "MY PET";
+      final petState = _petKey.currentState;
+      final hasPet = petState?.hasPetData == true;
+      final displayName = hasPet ? petState!.petName.toUpperCase() : "MY PET";
 
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(topName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24)),
-          const SizedBox(width: 4),
-          const Icon(Icons.arrow_drop_down, color: Colors.white),
-        ],
+      return GestureDetector(
+        onTap: hasPet
+            ? () => petState!.showPetSelector(context)
+            : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              displayName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Fredoka',
+                fontSize: 24,
+              ),
+            ),
+            if (hasPet) ...[
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28),
+            ],
+          ],
+        ),
       );
     }
+
     const titles = ['Pet', 'Diary', 'Health', 'Consult', 'Me'];
-    return Text(titles[_selectedIndex], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24));
+    return Text(
+      titles[_selectedIndex],
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24),
+    );
   }
 
   @override
@@ -146,15 +163,14 @@ class _MainScreenState extends State<MainScreen>
                 icon: const Icon(Icons.add, color: Colors.black87, size: 26), 
                 onPressed: () async {
                   if (_selectedIndex == 0) {
-                    // เปิดหน้า AddPet
+                    //เปิดหน้า AddPet → ได้ข้อมูลกลับมา → addPet() (รองรับหลายตัว)
                     final result = await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const AddPetScreen()),
                     );
-                    // ถ้ารับข้อมูลกลับมา สั่งอัปเดตหน้า Pet
                     if (result != null && result is Map<String, dynamic>) {
-                      _petKey.currentState?.updatePetData(result);
-                      setState(() {}); // รีเฟรช AppBar MainScreen ด้วย
+                      _petKey.currentState?.addPet(result);
+                      setState(() {}); 
                     }
                   } 
                   else if (_selectedIndex == 1) {
