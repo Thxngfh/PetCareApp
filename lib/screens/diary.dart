@@ -19,6 +19,10 @@ class DiaryScreenState extends State<DiaryScreen> {
   final GlobalKey<ExpenseScreenState> _expenseKey = GlobalKey<ExpenseScreenState>();
 
   int get currentTab => _tabIndex;
+  
+  // 🌟 เพิ่มฟังก์ชันนี้สำหรับนับรูปภาพที่มีอยู่จริงๆ
+  int getRealPhotoCount() => _entries.where((e) => e.imageBytes != null).length;
+
   void goToNewDiary() => _goToNewDiary();
   void goToNewExpense() => _expenseKey.currentState?.goToNewExpense();
 

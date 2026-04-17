@@ -71,8 +71,6 @@ class HealthScreenState extends State<HealthScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // ── ลบแถบ Header สีฟ้าออก เพราะ MainScreen มี AppBar อยู่แล้ว ──
-          
           //Tab Buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -219,7 +217,13 @@ class HealthScreenState extends State<HealthScreen> {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text('Sora', style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor.withOpacity(0.8), fontSize: 14)),
+
+                    // ── 4. เอาคำว่า 'Sora' ออก แล้วใส่ชื่อที่รับค่ามาจาก Add Screen ──
+                    Text(
+                      item['name'] ?? 'My Pet', 
+                      style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor.withOpacity(0.8), fontSize: 14)
+                    ),
+                    
                     const SizedBox(height: 10),
                     Row(
                       children: [
