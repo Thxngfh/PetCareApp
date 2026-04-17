@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; 
 import 'package:pethug/models/diary_entry.dart';
 import 'package:pethug/screens/diary_new.dart';
 import 'package:pethug/screens/diary_photo.dart';
@@ -71,19 +71,19 @@ class DiaryScreenState extends State<DiaryScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: Colors.white, // เพิ่มบรรทัดนี้
-        title: const Text('ลบบันทึก?'),
-        content: Text('ต้องการลบ "${entry.note}" ใช่ไหม?'),
+        backgroundColor: Colors.white,
+        title: const Text('Delete entry?'),
+        content: Text('Do you want to delete "${entry.note}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(foregroundColor: const Color(0xFF9FE2FB)),
-            child: const Text('ยกเลิก'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () { Navigator.pop(context); _deleteEntry(entry.id); },
             style: TextButton.styleFrom(foregroundColor: const Color(0xFF9FE2FB)),
-            child: const Text('ลบ'),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -117,7 +117,7 @@ class DiaryScreenState extends State<DiaryScreen> {
                       Expanded(
                         child: _filteredEntries.isEmpty
                             ? const Center(
-                                child: Text('ยังไม่มีบันทึก\nกด + เพื่อเพิ่ม',
+                                child: Text('No diary entries yet\nPress + to add',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(color: Colors.grey)),
                               )
