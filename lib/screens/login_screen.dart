@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb; // ใช้ Facebook logi
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'main_screen.dart'; // หรือ import 'package:pethug/screens/main_screen.dart'; (เปลี่ยนตามโฟลเดอร์ของคุณ)
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -221,7 +222,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 150,
                   child: ElevatedButton(
                     onPressed: () {
-                      // จัดการเมื่อกด Login
+                      final enteredEmail = _emailController.text;
+
+                      // 🌟 ส่งค่าไปทั้ง Email และบอกให้เปิดแท็บที่ 4 (หน้า Me)
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainScreen(
+                            userEmail: enteredEmail,
+                            initialIndex: 4, // 👈 เพิ่มบรรทัดนี้!
+                          ),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF8CBD6),

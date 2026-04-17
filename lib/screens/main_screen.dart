@@ -16,15 +16,17 @@ void main() {
 
 class MainScreen extends StatefulWidget {
   final String userEmail; 
+  final int initialIndex; // 🌟 1. เพิ่มบรรทัดนี้
 
-  const MainScreen({super.key, this.userEmail = ''});
+  // 🌟 2. เพิ่ม this.initialIndex = 0 ในนี้
+  const MainScreen({super.key, this.userEmail = '', this.initialIndex = 0}); 
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
-  int _selectedIndex = 0; 
+  late int _selectedIndex; 
   late AnimationController _animController;
   late Animation<double> _circleAnim;
   final Color appBlueColor = const Color(0xFF8FE7FF);
@@ -69,6 +71,9 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    // 🌟 4. ดึงค่าจาก widget มาใส่ให้ _selectedIndex ตอนเริ่มต้น
+    _selectedIndex = widget.initialIndex; 
+    
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,

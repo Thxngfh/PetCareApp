@@ -45,9 +45,9 @@ class _MeScreenState extends State<MeScreen> {
   @override
   void initState() {
     super.initState();
-    _displayName = 'Thongfah Lukpear';
+    _displayName = 'Your Name';
     _displayEmail = widget.email.isEmpty ? 'ไม่มีอีเมล' : widget.email;
-    _phoneMain = '067-087-67030';
+    _phoneMain = 'Phone Number';
     _phoneSecondary = '';
   }
 
