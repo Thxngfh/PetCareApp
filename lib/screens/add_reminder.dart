@@ -15,7 +15,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   
-  // ── 1. เพิ่ม Controller สำหรับ Pet Name ──
+  //เพิ่ม Controller สำหรับ Pet Name
   final TextEditingController _nameController = TextEditingController();
 
   final List<Map<String, dynamic>> _types = [
@@ -37,7 +37,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     _dateController.dispose();
     _timeController.dispose();
     _locationController.dispose(); 
-    _nameController.dispose(); // อย่าลืม dispose nameController
+    _nameController.dispose(); 
     super.dispose();
   }
 
@@ -178,7 +178,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── 2. เพิ่มช่องกรอก Name ──
+                    //เพิ่มช่องกรอก Name
                     _buildInputField('Pet Name', _nameController),
                     const SizedBox(height: 16),
 
@@ -230,7 +230,7 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              // ── 3. ส่งค่า Name กลับไปด้วย ──
+                              //ส่งค่า Name กลับไปด้วย
                               final newReminderData = {
                                 'name': _nameController.text.isEmpty ? 'My Pet' : _nameController.text, // เก็บชื่อสัตว์เลี้ยง
                                 'title': _titleController.text.isEmpty ? 'New Reminder' : _titleController.text,
