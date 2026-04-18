@@ -56,28 +56,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // --------------------------facebook sign in function--------------------------
   // ฟังก์ชัน Login Facebook
+  // ฟังก์ชันสำหรับล็อกอิน Facebook
   Future<UserCredential> signInWithFacebook() async {
     if (kIsWeb) {
-      // 🌐 Web
+      // 🌐 สำหรับรันบนเว็บ (Chrome)
       final provider = FacebookAuthProvider();
       return await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      // 📱 Android / iOS
-      final result = await FacebookAuth.instance.login();
-
-      if (result.status != LoginStatus.success) {
-        throw Exception("Facebook login failed");
+      // 📱 สำหรับมือถือ (Android/iOS)
+      final LoginResult result = await FacebookAuth.instance.login();
+      
+      if (result.status == LoginStatus.success) {
+        // 🌟 แก้ไขตรงนี้: เปลี่ยนจาก tokenString เป็น token เฉยๆ ครับ
+        final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
+        
+        return await FirebaseAuth.instance.signInWithCredential(credential);
+      } else {
+        throw Exception("Facebook login failed: ${result.message}");
       }
-
-      final accessToken = result.accessToken;
-
-      if (accessToken == null) {
-        throw Exception("No access token");
-      }
-
-      final credential = FacebookAuthProvider.credential(accessToken.token);
-
-      return await FirebaseAuth.instance.signInWithCredential(credential);
     }
   }
 
@@ -278,12 +274,34 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               // ปุ่ม Social Login (แยกเป็น Widget ด้านล่างเพื่อความสะอาดของโค้ด)
+              // ปุ่ม Social Login
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.google,
                 text: 'Login With Google',
                 onPressed: () async {
-                  // เรียกใช้ฟังก์ชัน login ด้วย Google
-                  await signInWithGoogle();
+                  try {
+                    // 🌟 1. เรียกใช้ฟังก์ชันของคุณ และเก็บข้อมูลไว้
+                    final userCredential = await signInWithGoogle();
+
+                    // 🌟 2. ดึงอีเมลที่ได้จากบัญชี Google มาใส่ตัวแปร
+                    final googleEmail = userCredential.user?.email ?? '';
+
+                    // 🌟 3. เปลี่ยนหน้าไปที่ MainScreen แท็บที่ 4 (หน้า Me) พร้อมส่งอีเมลไปด้วย
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainScreen(
+                            userEmail: googleEmail, 
+                            initialIndex: 4, 
+                          ),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    print("Google login error: $e");
+                    // โค้ดตรงนี้จะทำงานถ้าผู้ใช้กดยกเลิก หรือล็อกอินไม่สำเร็จ
+                  }
                 },
               ),
 
@@ -293,9 +311,33 @@ class _LoginScreenState extends State<LoginScreen> {
                 text: 'Login With Facebook',
                 onPressed: () async {
                   try {
-                    await signInWithFacebook();
+                    // ... โค้ดล็อกอินและเปลี่ยนหน้าเดิมของคุณ ...
+                    final userCredential = await signInWithFacebook();
+                    final facebookEmail = userCredential.user?.email ?? '';
+
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MainScreen(
+                            userEmail: facebookEmail,
+                            initialIndex: 4, 
+                          ),
+                        ),
+                      );
+                    }
                   } catch (e) {
                     print("Facebook error: $e");
+                    
+                    // 🌟 เพิ่มโค้ดตรงนี้! ให้มันเด้งแจ้งเตือน Error บนหน้าจอ
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('เกิดข้อผิดพลาด: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   }
                 },
               ),
