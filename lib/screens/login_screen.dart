@@ -20,7 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  bool _isObscure = true;
   @override
   void dispose() {
     _emailController.dispose();
@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 5),
               TextField(
                 controller: _passwordController,
-                obscureText: true, // ซ่อนตัวอักษรเวลาพิมพ์รหัส
+                obscureText: _isObscure, // ซ่อนตัวอักษรเวลาพิมพ์รหัส
                 decoration: InputDecoration(
                   hintText: 'Password',
                   hintStyle: const TextStyle(
@@ -177,6 +177,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     Icons.lock_outline,
                     color: Colors.grey,
                   ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isObscure ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure; // สลับสถานะเปิด-ปิดตา
+                      });
+                    },
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -185,6 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              
               const SizedBox(height: 5),
 
               // ปุ่ม Forgot Password
