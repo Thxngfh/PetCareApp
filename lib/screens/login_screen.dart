@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb; // ใช้ Facebook logi
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'main_screen.dart'; // หรือ import 'package:pethug/screens/main_screen.dart'; (เปลี่ยนตามโฟลเดอร์ของคุณ)
+import 'main_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,22 +21,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isObscure = true;
+  
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
-  // --------------------------google sign in function-------------------------
 
+  // google sign in function
   // เปิดหน้าต่างให้ผู้ใช้เลือกบัญชี Google
   Future<UserCredential> signInWithGoogle() async {
     if (kIsWeb) {
-      // 🌐 Web
+      //  Web
       final provider = GoogleAuthProvider();
       return await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      // 📱 Android / iOS
+      //  Android / iOS
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
       if (googleUser == null) {
@@ -54,20 +55,19 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --------------------------facebook sign in function--------------------------
+  // facebook sign in function
   // ฟังก์ชัน Login Facebook
-  // ฟังก์ชันสำหรับล็อกอิน Facebook
   Future<UserCredential> signInWithFacebook() async {
     if (kIsWeb) {
-      // 🌐 สำหรับรันบนเว็บ (Chrome)
+      //  สำหรับรันบนเว็บ (Chrome)
       final provider = FacebookAuthProvider();
       return await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      // 📱 สำหรับมือถือ (Android/iOS)
+      //  สำหรับมือถือ (Android/iOS)
       final LoginResult result = await FacebookAuth.instance.login();
       
       if (result.status == LoginStatus.success) {
-        // 🌟 แก้ไขตรงนี้: เปลี่ยนจาก tokenString เป็น token เฉยๆ ครับ
+        // เปลี่ยนจาก tokenString เป็น token เฉยๆ
         final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
         
         return await FirebaseAuth.instance.signInWithCredential(credential);
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // --------------------------apple sign in function--------------------------
+  // apple sign in function
   Future<UserCredential> signInWithApple() async {
 
     // เปิดหน้า Login Apple
@@ -104,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: const Color(0xFF8FE7FF),
       body: SafeArea(
         child: SingleChildScrollView(
-          // ป้องกันปัญหาคีย์บอร์ดบังหน้าจอ
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 5),
               TextField(
                 controller: _passwordController,
-                obscureText: _isObscure, // ซ่อนตัวอักษรเวลาพิมพ์รหัส
+                obscureText: _isObscure, 
                 decoration: InputDecoration(
                   hintText: 'Password',
                   hintStyle: const TextStyle(
@@ -184,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     onPressed: () {
                       setState(() {
-                        _isObscure = !_isObscure; // สลับสถานะเปิด-ปิดตา
+                        _isObscure = !_isObscure; 
                       });
                     },
                   ),
@@ -238,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(
                           builder: (context) => MainScreen(
                             userEmail: enteredEmail,
-                            initialIndex: 4, // 👈 เพิ่มบรรทัดนี้!
+                            initialIndex: 4, 
                           ),
                         ),
                       );
@@ -265,7 +264,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // เส้นแบ่ง Or Sign In With
               Row(
                 children: [
                   Expanded(child: Divider(color: Colors.blueGrey[300])),
@@ -285,20 +283,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
-              // ปุ่ม Social Login (แยกเป็น Widget ด้านล่างเพื่อความสะอาดของโค้ด)
               // ปุ่ม Social Login
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.google,
                 text: 'Login With Google',
                 onPressed: () async {
                   try {
-                    // 🌟 1. เรียกใช้ฟังก์ชันของคุณ และเก็บข้อมูลไว้
                     final userCredential = await signInWithGoogle();
-
-                    // 🌟 2. ดึงอีเมลที่ได้จากบัญชี Google มาใส่ตัวแปร
                     final googleEmail = userCredential.user?.email ?? '';
 
-                    // 🌟 3. เปลี่ยนหน้าไปที่ MainScreen แท็บที่ 4 (หน้า Me) พร้อมส่งอีเมลไปด้วย
                     if (context.mounted) {
                       Navigator.pushReplacement(
                         context,
@@ -312,18 +305,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   } catch (e) {
                     print("Google login error: $e");
-                    // โค้ดตรงนี้จะทำงานถ้าผู้ใช้กดยกเลิก หรือล็อกอินไม่สำเร็จ
                   }
                 },
               ),
 
               const SizedBox(height: 15),
+
               _buildSocialLoginButton(
                 icon: FontAwesomeIcons.facebookF,
                 text: 'Login With Facebook',
                 onPressed: () async {
                   try {
-                    // ... โค้ดล็อกอินและเปลี่ยนหน้าเดิมของคุณ ...
                     final userCredential = await signInWithFacebook();
                     final facebookEmail = userCredential.user?.email ?? '';
 
@@ -340,8 +332,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   } catch (e) {
                     print("Facebook error: $e");
-                    
-                    // 🌟 เพิ่มโค้ดตรงนี้! ให้มันเด้งแจ้งเตือน Error บนหน้าจอ
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -354,14 +344,42 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
 
-              if (!kIsWeb && Platform.isIOS)
+              if (!kIsWeb && Platform.isIOS) ...[
+                const SizedBox(height: 15), 
                 _buildSocialLoginButton(
                   icon: FontAwesomeIcons.apple,
                   text: 'Login With Apple',
                   onPressed: () async {
-                    await signInWithApple();
+                    try {
+                      final userCredential = await signInWithApple();
+                      final appleEmail = userCredential.user?.email ?? '';
+
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MainScreen(
+                              userEmail: appleEmail,
+                              initialIndex: 4, 
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      print("Apple login error: $e");
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('เกิดข้อผิดพลาด: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   },
                 ),
+              ],
+              
               const SizedBox(height: 20),
             ],
           ),
@@ -378,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, color: Color(0xFF3B5998), size: 20),
+      icon: Icon(icon, color: const Color(0xFF3B5998), size: 20),
       label: Text(
         text,
         style: const TextStyle(
