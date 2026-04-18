@@ -510,7 +510,11 @@ class AssessmentResultScreen extends StatelessWidget {
             // ── Close Button ───────────────────────────────────────────────
             Center(
               child: ElevatedButton(
-                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                onPressed: () {
+                  // สั่งให้ถอยหลังกลับไป 3 หน้าจอ (Result -> Severity -> Selection)
+                  int count = 0;
+                  Navigator.of(context).popUntil((_) => count++ >= 3);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8FE7FF),
                   padding: const EdgeInsets.symmetric(horizontal: 52, vertical: 14),
