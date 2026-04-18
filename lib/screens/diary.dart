@@ -20,7 +20,7 @@ class DiaryScreenState extends State<DiaryScreen> {
 
   int get currentTab => _tabIndex;
   
-  // 🌟 เพิ่มฟังก์ชันนี้สำหรับนับรูปภาพที่มีอยู่จริงๆ
+  //  เพิ่มฟังก์ชันนี้สำหรับนับรูปภาพที่มีอยู่จริงๆ
   int getRealPhotoCount() => _entries.where((e) => e.imageBytes != null).length;
 
   void goToNewDiary() => _goToNewDiary();
@@ -110,7 +110,7 @@ class DiaryScreenState extends State<DiaryScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(icon: const Icon(Icons.chevron_left), onPressed: _previousMonth),
-                          Text('< ${_monthLabel()} >', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text( '${_monthLabel()}', style: const TextStyle(fontWeight: FontWeight.bold)),
                           IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
                         ],
                       ),

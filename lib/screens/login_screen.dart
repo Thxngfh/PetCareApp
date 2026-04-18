@@ -32,11 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
   // เปิดหน้าต่างให้ผู้ใช้เลือกบัญชี Google
   Future<UserCredential> signInWithGoogle() async {
     if (kIsWeb) {
-      // 🌐 Web
+      //  Web
       final provider = GoogleAuthProvider();
       return await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      // 📱 Android / iOS
+      //  Android / iOS
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
       if (googleUser == null) {
@@ -59,15 +59,15 @@ class _LoginScreenState extends State<LoginScreen> {
   // ฟังก์ชันสำหรับล็อกอิน Facebook
   Future<UserCredential> signInWithFacebook() async {
     if (kIsWeb) {
-      // 🌐 สำหรับรันบนเว็บ (Chrome)
+      //  สำหรับรันบนเว็บ (Chrome)
       final provider = FacebookAuthProvider();
       return await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      // 📱 สำหรับมือถือ (Android/iOS)
+      //  สำหรับมือถือ (Android/iOS)
       final LoginResult result = await FacebookAuth.instance.login();
       
       if (result.status == LoginStatus.success) {
-        // 🌟 แก้ไขตรงนี้: เปลี่ยนจาก tokenString เป็น token เฉยๆ ครับ
+        //  แก้ไขตรงนี้: เปลี่ยนจาก tokenString เป็น token เฉยๆ ครับ
         final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.token);
         
         return await FirebaseAuth.instance.signInWithCredential(credential);
@@ -196,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 5),
 
               // ปุ่ม Forgot Password
@@ -232,13 +232,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       final enteredEmail = _emailController.text;
 
-                      // 🌟 ส่งค่าไปทั้ง Email และบอกให้เปิดแท็บที่ 4 (หน้า Me)
+                      //  ส่งค่าไปทั้ง Email และบอกให้เปิดแท็บที่ 4 (หน้า Me)
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => MainScreen(
                             userEmail: enteredEmail,
-                            initialIndex: 4, // 👈 เพิ่มบรรทัดนี้!
+                            initialIndex: 4, //  เพิ่มบรรทัดนี้!
                           ),
                         ),
                       );
@@ -292,13 +292,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 text: 'Login With Google',
                 onPressed: () async {
                   try {
-                    // 🌟 1. เรียกใช้ฟังก์ชันของคุณ และเก็บข้อมูลไว้
+                    //  1. เรียกใช้ฟังก์ชันของคุณ และเก็บข้อมูลไว้
                     final userCredential = await signInWithGoogle();
 
-                    // 🌟 2. ดึงอีเมลที่ได้จากบัญชี Google มาใส่ตัวแปร
+                    // 2. ดึงอีเมลที่ได้จากบัญชี Google มาใส่ตัวแปร
                     final googleEmail = userCredential.user?.email ?? '';
 
-                    // 🌟 3. เปลี่ยนหน้าไปที่ MainScreen แท็บที่ 4 (หน้า Me) พร้อมส่งอีเมลไปด้วย
+                    //  3. เปลี่ยนหน้าไปที่ MainScreen แท็บที่ 4 (หน้า Me) พร้อมส่งอีเมลไปด้วย
                     if (context.mounted) {
                       Navigator.pushReplacement(
                         context,
@@ -341,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   } catch (e) {
                     print("Facebook error: $e");
                     
-                    // 🌟 เพิ่มโค้ดตรงนี้! ให้มันเด้งแจ้งเตือน Error บนหน้าจอ
+                    //  เพิ่มโค้ดตรงนี้! ให้มันเด้งแจ้งเตือน Error บนหน้าจอ
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

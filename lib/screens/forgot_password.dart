@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 🌟 เพิ่ม import Firebase
+import 'package:firebase_auth/firebase_auth.dart'; //  เพิ่ม import Firebase
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -10,7 +10,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  bool _isLoading = false; // 🌟 เพิ่มตัวแปรเช็คสถานะการโหลด
+  bool _isLoading = false; //  เพิ่มตัวแปรเช็คสถานะการโหลด
 
   @override
   void dispose() {
@@ -134,7 +134,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: SizedBox(
                 width: 200,
                 child: ElevatedButton(
-                  // 🌟 ปิดการกดปุ่มถ้าระบบกำลังโหลดอยู่ ถ้าไม่ได้โหลดให้เรียก _resetPassword
+                  //  ปิดการกดปุ่มถ้าระบบกำลังโหลดอยู่ ถ้าไม่ได้โหลดให้เรียก _resetPassword
                   onPressed: _isLoading ? null : _resetPassword,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF8CBD6),
@@ -144,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
-                  // 🌟 เปลี่ยนข้อความเป็นปุ่มหมุนๆ ตอนกำลังโหลด
+                  //  เปลี่ยนข้อความเป็นปุ่มหมุนๆ ตอนกำลังโหลด
                   child: _isLoading
                       ? const SizedBox(
                           height: 20,

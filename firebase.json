@@ -1,1 +1,25 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"petcareapp-1af6b","appId":"1:588874999889:android:1319776eb0d0d135cc3070","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"petcareapp-1af6b","configurations":{"android":"1:588874999889:android:1319776eb0d0d135cc3070","ios":"1:588874999889:ios:03d423a11ca6644bcc3070","macos":"1:588874999889:ios:03d423a11ca6644bcc3070","web":"1:588874999889:web:3df23c9537e32d83cc3070","windows":"1:588874999889:web:64c523424bd8ffd8cc3070"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "petcareapp-1af6b",
+          "appId": "1:588874999889:android:1319776eb0d0d135cc3070",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "petcareapp-1af6b",
+          "configurations": {
+            "android": "1:588874999889:android:1319776eb0d0d135cc3070",
+            "ios": "1:588874999889:ios:03d423a11ca6644bcc3070",
+            "macos": "1:588874999889:ios:03d423a11ca6644bcc3070",
+            "web": "1:588874999889:web:3df23c9537e32d83cc3070",
+            "windows": "1:588874999889:web:64c523424bd8ffd8cc3070"
+          }
+        }
+      }
+    }
+  }
+}
