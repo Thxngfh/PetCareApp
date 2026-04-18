@@ -5,8 +5,7 @@ import 'manageweight.dart';
 import 'weighthistory.dart';
 import 'managevaccine.dart';
 import 'vaccinehistory.dart';
-
-// Model สำหรับสัตว์เลี้ยงแต่ละตัว
+import 'add_reminder.dart';
 
 class PetData {
   String name;
@@ -40,8 +39,6 @@ class PetData {
         upcomingReminders = upcomingReminders ?? [];
 }
 
-// PetScreen
-
 class PetScreen extends StatefulWidget {
   final VoidCallback? onPetDataChanged;
 
@@ -56,7 +53,6 @@ class PetScreenState extends State<PetScreen> {
   final Color textBlueColor = const Color(0xFF4C6184);
   final Color cardLightBlue = const Color(0xFFDDF5FF);
 
-  // รายการสัตว์เลี้ยงทั้งหมด
   List<PetData> pets = [];
   int _activePetIndex = 0;
 
@@ -70,14 +66,10 @@ class PetScreenState extends State<PetScreen> {
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _adoptionController = TextEditingController();
 
-  // Getters สำหรับสัตว์เลี้ยงที่ active
   bool get hasPetData => pets.isNotEmpty;
   PetData? get _activePet => pets.isEmpty ? null : pets[_activePetIndex];
-
-  // ใช้ใน main_screen.dart
   String get petName => _activePet?.name ?? 'No Pet';
 
-  // เพิ่มสัตว์เลี้ยงใหม่ (เรียกจาก main_screen)
   void addPet(Map<String, dynamic> data) {
     setState(() {
       pets.add(PetData(
@@ -96,12 +88,29 @@ class PetScreenState extends State<PetScreen> {
 
   void updatePetData(Map<String, dynamic> data) => addPet(data);
 
-  // ✅ ลบสัตว์เลี้ยงที่ active
+  // เพิ่ม reminder เข้า active pet
+  void addReminderToActivePet(Map<String, dynamic> reminder) {
+    if (pets.isEmpty) return;
+    setState(() {
+      pets[_activePetIndex].upcomingReminders.add(reminder);
+    });
+  }
+
+  // ลบ reminder ออกจาก active pet โดยจับคู่จาก title + date + time
+  void removeReminderFromActivePet(Map<String, dynamic> reminder) {
+    if (pets.isEmpty) return;
+    setState(() {
+      pets[_activePetIndex].upcomingReminders.removeWhere((r) =>
+          r['title'] == reminder['title'] &&
+          r['date'] == reminder['date'] &&
+          r['time'] == reminder['time']);
+    });
+  }
+
   void _deleteActivePet() {
     if (pets.isEmpty) return;
     setState(() {
       pets.removeAt(_activePetIndex);
-      // ปรับ index ไม่ให้เกิน range
       if (pets.isNotEmpty) {
         _activePetIndex = (_activePetIndex - 1).clamp(0, pets.length - 1);
       } else {
@@ -111,7 +120,6 @@ class PetScreenState extends State<PetScreen> {
     widget.onPetDataChanged?.call();
   }
 
-  // ✅ Dialog ยืนยันก่อนลบ
   void _showDeleteConfirmDialog(BuildContext context) {
     final pet = _activePet;
     if (pet == null) return;
@@ -128,36 +136,26 @@ class PetScreenState extends State<PetScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFEAEE),
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(color: Color(0xFFFFEAEE), shape: BoxShape.circle),
                 child: const Icon(Icons.delete_outline, color: Color(0xFFE57373), size: 36),
               ),
               const SizedBox(height: 16),
-              Text(
-                'Remove ${pet.name}?',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF4C6184),
-                ),
-              ),
+              Text('Remove ${pet.name}?',
+                  style: const TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4C6184))),
               const SizedBox(height: 8),
-              Text(
-                'All data for ${pet.name} will be permanently deleted.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 14,
-                  color: const Color(0xFF4C6184).withOpacity(0.7),
-                ),
-              ),
+              Text('All data for ${pet.name} will be permanently deleted.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 14,
+                      color: const Color(0xFF4C6184).withOpacity(0.7))),
               const SizedBox(height: 24),
               Row(
                 children: [
-                  // Cancel
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
@@ -166,19 +164,15 @@ class PetScreenState extends State<PetScreen> {
                         side: BorderSide(color: const Color(0xFF4C6184).withOpacity(0.3)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontFamily: 'Fredoka',
-                          color: Color(0xFF4C6184),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: const Text('Cancel',
+                          style: TextStyle(
+                              fontFamily: 'Fredoka',
+                              color: Color(0xFF4C6184),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Delete
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -191,15 +185,12 @@ class PetScreenState extends State<PetScreen> {
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(
-                          fontFamily: 'Fredoka',
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: const Text('Delete',
+                          style: TextStyle(
+                              fontFamily: 'Fredoka',
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
@@ -211,7 +202,6 @@ class PetScreenState extends State<PetScreen> {
     );
   }
 
-  // Dropdown เลือกสัตว์เลี้ยง
   void showPetSelector(BuildContext context) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -231,7 +221,6 @@ class PetScreenState extends State<PetScreen> {
     );
   }
 
-  // Edit helpers
   void _startEditing() {
     final pet = _activePet;
     if (pet == null) return;
@@ -279,10 +268,7 @@ class PetScreenState extends State<PetScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  decoration: BoxDecoration(
-                    color: appBlueColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  decoration: BoxDecoration(color: appBlueColor, borderRadius: BorderRadius.circular(16)),
                   child: Column(
                     children: [
                       _buildActionSheetButton(
@@ -308,23 +294,14 @@ class PetScreenState extends State<PetScreen> {
                 const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: appBlueColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  decoration: BoxDecoration(color: appBlueColor, borderRadius: BorderRadius.circular(16)),
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        "Cancel",
-                        style: TextStyle(
-                          fontFamily: 'Fredoka',
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      child: Text("Cancel",
+                          style: TextStyle(
+                              fontFamily: 'Fredoka', color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
                     ),
                   ),
                 ),
@@ -336,11 +313,8 @@ class PetScreenState extends State<PetScreen> {
     );
   }
 
-  Widget _buildActionSheetButton({
-    required IconData icon,
-    required String text,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildActionSheetButton(
+      {required IconData icon, required String text, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -350,15 +324,9 @@ class PetScreenState extends State<PetScreen> {
           children: [
             Icon(icon, color: Colors.white, size: 24),
             const SizedBox(width: 12),
-            Text(
-              text,
-              style: const TextStyle(
-                fontFamily: 'Fredoka',
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text(text,
+                style: const TextStyle(
+                    fontFamily: 'Fredoka', color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -370,11 +338,8 @@ class PetScreenState extends State<PetScreen> {
     try {
       List<String> parts = dob.split('/');
       if (parts.length == 3) {
-        DateTime birthDate = DateTime(
-          int.parse(parts[2]),
-          int.parse(parts[1]),
-          int.parse(parts[0]),
-        );
+        DateTime birthDate =
+            DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
         DateTime today = DateTime.now();
         int years = today.year - birthDate.year;
         int months = today.month - birthDate.month;
@@ -390,15 +355,12 @@ class PetScreenState extends State<PetScreen> {
     return "0Y 0M";
   }
 
-  // Build
   @override
   Widget build(BuildContext context) {
     if (!hasPetData) {
       return Center(
-        child: Text(
-          'Please Add a Pet +',
-          style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 20),
-        ),
+        child: Text('Please Add a Pet +',
+            style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 20)),
       );
     }
 
@@ -412,16 +374,12 @@ class PetScreenState extends State<PetScreen> {
           // Profile Card
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cardLightBlue,
-              borderRadius: BorderRadius.circular(24),
-            ),
+            decoration: BoxDecoration(color: cardLightBlue, borderRadius: BorderRadius.circular(24)),
             child: Column(
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Avatar
                     GestureDetector(
                       onTap: _isEditing ? () => _showImagePickerActionSheet(context) : null,
                       child: Stack(
@@ -434,20 +392,12 @@ class PetScreenState extends State<PetScreen> {
                               color: Colors.white,
                               border: Border.all(color: Colors.black87, width: 1.5),
                               image: _isEditing && _pickedImage != null
-                                  ? DecorationImage(
-                                      image: FileImage(_pickedImage!),
-                                      fit: BoxFit.cover,
-                                    )
+                                  ? DecorationImage(image: FileImage(_pickedImage!), fit: BoxFit.cover)
                                   : (pet.image != null
-                                      ? DecorationImage(
-                                          image: FileImage(pet.image!),
-                                          fit: BoxFit.cover,
-                                        )
+                                      ? DecorationImage(image: FileImage(pet.image!), fit: BoxFit.cover)
                                       : null),
                             ),
-                            child: (_isEditing &&
-                                        _pickedImage == null &&
-                                        pet.image == null) ||
+                            child: (_isEditing && _pickedImage == null && pet.image == null) ||
                                     (!_isEditing && pet.image == null)
                                 ? Icon(Icons.pets, color: textBlueColor, size: 40)
                                 : null,
@@ -458,15 +408,8 @@ class PetScreenState extends State<PetScreen> {
                               right: 0,
                               child: Container(
                                 padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  color: textBlueColor,
-                                  size: 18,
-                                ),
+                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                child: Icon(Icons.camera_alt, color: textBlueColor, size: 18),
                               ),
                             ),
                         ],
@@ -481,102 +424,70 @@ class PetScreenState extends State<PetScreen> {
                             children: [
                               _isEditing
                                   ? Expanded(child: _buildNameEditField())
-                                  : Text(
-                                      pet.name.toUpperCase(),
+                                  : Text(pet.name.toUpperCase(),
                                       style: TextStyle(
-                                        fontFamily: 'Fredoka',
-                                        color: textBlueColor,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                          fontFamily: 'Fredoka',
+                                          color: textBlueColor,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold)),
                               const SizedBox(width: 8),
-                              Icon(
-                                pet.gender == 'Male' ? Icons.male : Icons.female,
-                                color: appBlueColor,
-                                size: 24,
-                              ),
+                              Icon(pet.gender == 'Male' ? Icons.male : Icons.female,
+                                  color: appBlueColor, size: 24),
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            "${getAge(pet.dob)}  ${pet.gender}",
-                            style: TextStyle(
-                              fontFamily: 'Fredoka',
-                              color: textBlueColor.withOpacity(0.7),
-                              fontSize: 14,
-                            ),
-                          ),
+                          Text("${getAge(pet.dob)}  ${pet.gender}",
+                              style: TextStyle(
+                                  fontFamily: 'Fredoka',
+                                  color: textBlueColor.withOpacity(0.7),
+                                  fontSize: 14)),
                         ],
                       ),
                     ),
-                    // ✅ Edit / Save / PopupMenu (มี Edit + Delete)
                     _isEditing
                         ? Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                             child: IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
-                              icon: const Icon(
-                                Icons.check_box_outlined,
-                                color: Color(0xFF4C6184),
-                                size: 28,
-                              ),
+                              icon: const Icon(Icons.check_box_outlined, color: Color(0xFF4C6184), size: 28),
                               onPressed: _saveChanges,
                             ),
                           )
                         : PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert, color: Colors.black54),
                             offset: const Offset(0, 40),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             color: const Color(0xFFB4E6F8),
                             onSelected: (String result) {
-                              if (result == 'edit') {
-                                _startEditing();
-                              } else if (result == 'delete') {
-                                _showDeleteConfirmDialog(context);
-                              }
+                              if (result == 'edit') _startEditing();
+                              else if (result == 'delete') _showDeleteConfirmDialog(context);
                             },
-                            itemBuilder: (BuildContext context) =>
-                                <PopupMenuEntry<String>>[
-                              // Edit
+                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                               const PopupMenuItem<String>(
                                 value: 'edit',
                                 height: 40,
                                 child: Center(
-                                  child: Text(
-                                    'Edit',
-                                    style: TextStyle(
-                                      fontFamily: 'Fredoka',
-                                      color: Color(0xFF4C6184),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                                  child: Text('Edit',
+                                      style: TextStyle(
+                                          fontFamily: 'Fredoka',
+                                          color: Color(0xFF4C6184),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600)),
                                 ),
                               ),
-                              // Divider
                               const PopupMenuDivider(height: 1),
-                              // Delete
                               const PopupMenuItem<String>(
                                 value: 'delete',
                                 height: 40,
                                 child: Center(
-                                  child: Text(
-                                    'Delete',
-                                    style: TextStyle(
-                                      fontFamily: 'Fredoka',
-                                      color: Color(0xFFE57373),
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                                  child: Text('Delete',
+                                      style: TextStyle(
+                                          fontFamily: 'Fredoka',
+                                          color: Color(0xFFE57373),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600)),
                                 ),
                               ),
                             ],
@@ -585,36 +496,18 @@ class PetScreenState extends State<PetScreen> {
                 ),
                 const SizedBox(height: 24),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: _buildInfoItem("Birthday", pet.dob, _dobController),
-                    ),
+                    Expanded(child: _buildInfoItem("Birthday", pet.dob, _dobController)),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildInfoItem("Breed", pet.breed, _breedController),
-                    ),
+                    Expanded(child: _buildInfoItem("Breed", pet.breed, _breedController)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: _buildInfoItem(
-                        "Adoption Date",
-                        pet.adoptionDate,
-                        _adoptionController,
-                      ),
-                    ),
+                    Expanded(child: _buildInfoItem("Adoption Date", pet.adoptionDate, _adoptionController)),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildInfoItem(
-                        "Coat color",
-                        pet.coatColor,
-                        _colorController,
-                      ),
-                    ),
+                    Expanded(child: _buildInfoItem("Coat color", pet.coatColor, _colorController)),
                   ],
                 ),
               ],
@@ -627,66 +520,39 @@ class PetScreenState extends State<PetScreen> {
           Row(
             children: [
               Expanded(
-                child: _buildActionCard(
-                  Icons.monitor_weight_outlined,
-                  "Weight",
-                  pet.weight,
-                  onCardTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            WeightHistoryScreen(weightRecords: pet.weightRecords),
-                      ),
-                    );
-                  },
-                  onAddTap: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ManageWeightScreen(),
-                      ),
-                    );
-                    if (result != null && result is Map<String, dynamic>) {
-                      setState(() {
-                        pet.weight = result["weight"];
-                        pet.weightRecords.insert(0, result);
-                      });
-                    }
-                  },
-                ),
+                child: _buildActionCard(Icons.monitor_weight_outlined, "Weight", pet.weight,
+                    onCardTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                WeightHistoryScreen(weightRecords: pet.weightRecords))),
+                    onAddTap: () async {
+                      final result = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => const ManageWeightScreen()));
+                      if (result != null && result is Map<String, dynamic>) {
+                        setState(() {
+                          pet.weight = result["weight"];
+                          pet.weightRecords.insert(0, result);
+                        });
+                      }
+                    }),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildActionCard(
-                  Icons.vaccines_outlined,
-                  "Vaccine",
-                  pet.vaccine,
-                  onCardTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VaccineHistoryScreen(
-                          vaccineRecords: pet.vaccineRecords,
-                        ),
-                      ),
-                    );
-                  },
-                  onAddTap: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ManageVaccineScreen(),
-                      ),
-                    );
-                    if (result != null && result is Map<String, dynamic>) {
-                      setState(() {
-                        pet.vaccine = result["type"];
-                        pet.vaccineRecords.insert(0, result);
-                      });
-                    }
-                  },
-                ),
+                child: _buildActionCard(Icons.vaccines_outlined, "Vaccine", pet.vaccine,
+                    onCardTap: () => Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                VaccineHistoryScreen(vaccineRecords: pet.vaccineRecords))),
+                    onAddTap: () async {
+                      final result = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => const ManageVaccineScreen()));
+                      if (result != null && result is Map<String, dynamic>) {
+                        setState(() {
+                          pet.vaccine = result["type"];
+                          pet.vaccineRecords.insert(0, result);
+                        });
+                      }
+                    }),
               ),
             ],
           ),
@@ -698,15 +564,12 @@ class PetScreenState extends State<PetScreen> {
             children: [
               Icon(Icons.calendar_month, color: textBlueColor, size: 28),
               const SizedBox(width: 8),
-              Text(
-                "Upcoming Reminder",
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  color: textBlueColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text("Upcoming Reminder",
+                  style: TextStyle(
+                      fontFamily: 'Fredoka',
+                      color: textBlueColor,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 12),
@@ -714,169 +577,117 @@ class PetScreenState extends State<PetScreen> {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Text(
-                      "No upcoming reminders yet.",
-                      style: TextStyle(
-                        fontFamily: 'Fredoka',
-                        color: textBlueColor.withOpacity(0.5),
-                        fontSize: 16,
-                      ),
-                    ),
+                    child: Text("No upcoming reminders yet.",
+                        style: TextStyle(
+                            fontFamily: 'Fredoka',
+                            color: textBlueColor.withOpacity(0.5),
+                            fontSize: 16)),
                   ),
                 )
               : Column(
                   children: pet.upcomingReminders.map((reminder) {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cardLightBlue,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(color: cardLightBlue, borderRadius: BorderRadius.circular(16)),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              reminder['icon'] ?? Icons.vaccines_outlined,
-                              color: textBlueColor,
-                            ),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                            child: Icon(reminder['icon'] ?? Icons.vaccines_outlined, color: textBlueColor),
                           ),
                           const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                reminder['title'] ?? 'Reminder',
-                                style: TextStyle(
-                                  fontFamily: 'Fredoka',
-                                  color: textBlueColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(reminder['title'] ?? 'Reminder',
+                                    style: TextStyle(
+                                        fontFamily: 'Fredoka',
+                                        color: textBlueColor,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${reminder['date'] ?? 'Not set'}  ${reminder['time'] ?? ''}',
+                                  style: TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      color: textBlueColor.withOpacity(0.6),
+                                      fontSize: 13),
                                 ),
-                              ),
-                              Text(
-                                pet.name,
-                                style: TextStyle(
-                                  fontFamily: 'Fredoka',
-                                  color: textBlueColor.withOpacity(0.7),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                                if ((reminder['location'] ?? 'No location') != 'No location')
+                                  Text(reminder['location'],
+                                      style: TextStyle(
+                                          fontFamily: 'Fredoka',
+                                          color: textBlueColor.withOpacity(0.5),
+                                          fontSize: 12)),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     );
                   }).toList(),
                 ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  // Widget helpers
   Widget _buildNameEditField() {
     return Container(
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
       child: TextField(
         controller: _nameController,
         decoration: const InputDecoration(
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: EdgeInsets.zero,
-        ),
+            border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.zero),
         textAlignVertical: TextAlignVertical.center,
         style: TextStyle(
-          fontFamily: 'Fredoka',
-          color: textBlueColor,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
+            fontFamily: 'Fredoka', color: textBlueColor, fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildInfoItem(
-    String title,
-    String value,
-    TextEditingController controller,
-  ) {
+  Widget _buildInfoItem(String title, String value, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Fredoka',
-            color: textBlueColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        Text(title,
+            style: TextStyle(
+                fontFamily: 'Fredoka', color: textBlueColor, fontSize: 16, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         _isEditing
             ? Container(
                 height: 36,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
                 child: TextField(
                   controller: controller,
                   decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
+                      border: InputBorder.none, isDense: true, contentPadding: EdgeInsets.zero),
                   textAlignVertical: TextAlignVertical.center,
-                  style: TextStyle(
-                    fontFamily: 'Fredoka',
-                    color: textBlueColor,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 14),
                 ),
               )
-            : Text(
-                value,
+            : Text(value,
                 style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  color: textBlueColor.withOpacity(0.7),
-                  fontSize: 14,
-                ),
-              ),
+                    fontFamily: 'Fredoka', color: textBlueColor.withOpacity(0.7), fontSize: 14)),
       ],
     );
   }
 
-  Widget _buildActionCard(
-    IconData icon,
-    String title,
-    String value, {
-    VoidCallback? onAddTap,
-    VoidCallback? onCardTap,
-  }) {
+  Widget _buildActionCard(IconData icon, String title, String value,
+      {VoidCallback? onAddTap, VoidCallback? onCardTap}) {
     return GestureDetector(
       onTap: onCardTap,
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cardLightBlue,
-          borderRadius: BorderRadius.circular(20),
-        ),
+        decoration: BoxDecoration(color: cardLightBlue, borderRadius: BorderRadius.circular(20)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -884,15 +695,12 @@ class PetScreenState extends State<PetScreen> {
               children: [
                 Icon(icon, color: textBlueColor, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontFamily: 'Fredoka',
-                    color: textBlueColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text(title,
+                    style: TextStyle(
+                        fontFamily: 'Fredoka',
+                        color: textBlueColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500)),
               ],
             ),
             const SizedBox(height: 12),
@@ -900,24 +708,18 @@ class PetScreenState extends State<PetScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    value.isEmpty ? "" : value,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Fredoka',
-                      color: textBlueColor.withOpacity(0.5),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
+                  child: Text(value.isEmpty ? "" : value,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontFamily: 'Fredoka',
+                          color: textBlueColor.withOpacity(0.5),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300)),
                 ),
                 GestureDetector(
                   onTap: onAddTap,
                   child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                     child: const Icon(Icons.add, color: Colors.black87, size: 20),
                   ),
                 ),
@@ -978,19 +780,10 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
               right: 12,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFF4D4F),
-                  shape: BoxShape.circle,
-                ),
-                child: const Text(
-                  '1',
-                  style: TextStyle(
-                    fontFamily: 'Fredoka',
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                decoration: const BoxDecoration(color: Color(0xFFFF4D4F), shape: BoxShape.circle),
+                child: const Text('1',
+                    style: TextStyle(
+                        fontFamily: 'Fredoka', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -998,15 +791,9 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              widget.pets[_selected].name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Fredoka',
-                fontSize: 24,
-              ),
-            ),
+            Text(widget.pets[_selected].name,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24)),
             const SizedBox(width: 4),
             const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28),
           ],
@@ -1028,7 +815,6 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
         itemBuilder: (context, i) {
           final pet = widget.pets[i];
           final isActive = i == _selected;
-
           return GestureDetector(
             onTap: () {
               setState(() => _selected = i);
@@ -1039,12 +825,9 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFDDF5FF),
-                borderRadius: BorderRadius.circular(28),
-              ),
+                  color: const Color(0xFFDDF5FF), borderRadius: BorderRadius.circular(28)),
               child: Row(
                 children: [
-                  // Avatar
                   Container(
                     width: 72,
                     height: 72,
@@ -1053,10 +836,7 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
                       border: Border.all(color: Colors.white, width: 2),
                       color: Colors.white,
                       image: pet.image != null
-                          ? DecorationImage(
-                              image: FileImage(pet.image!),
-                              fit: BoxFit.cover,
-                            )
+                          ? DecorationImage(image: FileImage(pet.image!), fit: BoxFit.cover)
                           : null,
                     ),
                     child: pet.image == null
@@ -1064,39 +844,26 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
                         : null,
                   ),
                   const SizedBox(width: 20),
-
-                  // Name + gender
                   Expanded(
                     child: Row(
                       children: [
-                        Text(
-                          pet.name,
-                          style: TextStyle(
-                            fontFamily: 'Fredoka',
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: widget.textBlueColor,
-                          ),
-                        ),
+                        Text(pet.name,
+                            style: TextStyle(
+                                fontFamily: 'Fredoka',
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                color: widget.textBlueColor)),
                         const SizedBox(width: 8),
-                        Icon(
-                          pet.gender == 'Male' ? Icons.male : Icons.female,
-                          color: const Color(0xFF8FE7FF),
-                          size: 26,
-                        ),
+                        Icon(pet.gender == 'Male' ? Icons.male : Icons.female,
+                            color: const Color(0xFF8FE7FF), size: 26),
                       ],
                     ),
                   ),
-
-                  // Checkmark circle
                   if (isActive)
                     Container(
                       width: 44,
                       height: 44,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF3B5998),
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: const BoxDecoration(color: Color(0xFF3B5998), shape: BoxShape.circle),
                       child: const Icon(Icons.check, color: Colors.white, size: 26),
                     ),
                 ],
@@ -1105,8 +872,6 @@ class _PetSelectorPageState extends State<_PetSelectorPage> {
           );
         },
       ),
-
-      // Bottom nav (decorative)
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,

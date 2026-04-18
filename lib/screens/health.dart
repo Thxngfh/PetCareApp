@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 
 class HealthScreen extends StatefulWidget {
   final VoidCallback? onReminderDeleted;
-  
-  const HealthScreen({super.key, this.onReminderDeleted});
+  // เพิ่ม callback ใหม่ที่ส่งข้อมูล reminder ที่ถูกลบออกมา
+  final void Function(Map<String, dynamic> reminder)? onReminderDeletedData;
+
+  const HealthScreen({
+    super.key,
+    this.onReminderDeleted,
+    this.onReminderDeletedData,
+  });
 
   @override
   State<HealthScreen> createState() => HealthScreenState();
@@ -14,17 +20,15 @@ class HealthScreenState extends State<HealthScreen> {
 
   List<Map<String, dynamic>> remindersList = [];
 
-  final Color textBlueColor = const Color(0xFF4C6184); 
+  final Color textBlueColor = const Color(0xFF4C6184);
 
-  // ฟังก์ชันรับข้อมูลจากหน้า Add (ถูกเรียกใช้จาก MainScreen ผ่าน GlobalKey)
   void addReminder(Map<String, dynamic> data) {
     setState(() {
-      remindersList.insert(0, data); 
-      _selectedTab = 'notification'; 
+      remindersList.insert(0, data);
+      _selectedTab = 'notification';
     });
   }
 
-  // ฟังก์ชันลบข้อมูลพร้อมหน้าต่างยืนยัน
   void _deleteReminder(int index) {
     showDialog(
       context: context,
@@ -40,25 +44,32 @@ class HealthScreenState extends State<HealthScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), 
-            child: const Text('Cancel', style: TextStyle(fontFamily: 'Fredoka', color: Colors.grey, fontSize: 16)),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel',
+                style: TextStyle(fontFamily: 'Fredoka', color: Colors.grey, fontSize: 16)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4D4F), 
+              backgroundColor: const Color(0xFFFF4D4F),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
             onPressed: () {
+              // เก็บข้อมูล reminder ไว้ก่อนลบ แล้วส่งไปให้ main_screen
+              final deletedReminder = remindersList[index];
+
               setState(() {
-                remindersList.removeAt(index); 
+                remindersList.removeAt(index);
               });
-              
-              widget.onReminderDeleted?.call(); // แจ้ง MainScreen ให้ลดตัวเลขกระดิ่ง
-              
-              Navigator.pop(context); 
+
+              widget.onReminderDeleted?.call();
+              // ส่งข้อมูลที่ลบออกไปให้ main_screen นำไปลบจาก pet ด้วย
+              widget.onReminderDeletedData?.call(deletedReminder);
+
+              Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(fontFamily: 'Fredoka', color: Colors.white, fontSize: 16)),
+            child: const Text('Delete',
+                style: TextStyle(fontFamily: 'Fredoka', color: Colors.white, fontSize: 16)),
           ),
         ],
       ),
@@ -71,7 +82,7 @@ class HealthScreenState extends State<HealthScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          //Tab Buttons
+          // Tab Buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
@@ -93,20 +104,19 @@ class HealthScreenState extends State<HealthScreen> {
                         children: [
                           Icon(Icons.notifications_none,
                               size: 20,
-                              color: _selectedTab == 'notification'
-                                  ? Colors.white
-                                  : const Color(0xFFA5A5A5)),
+                              color: _selectedTab == 'notification' ? Colors.white : const Color(0xFFA5A5A5)),
                           const SizedBox(width: 6),
                           Text(
-                              remindersList.isEmpty ? 'Notification' : 'Notification(${remindersList.length})',
-                              style: TextStyle(
-                                fontFamily: 'Fredoka',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: _selectedTab == 'notification'
-                                    ? Colors.white
-                                    : const Color(0xFFA5A5A5),
-                              )),
+                            remindersList.isEmpty
+                                ? 'Notification'
+                                : 'Notification(${remindersList.length})',
+                            style: TextStyle(
+                              fontFamily: 'Fredoka',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: _selectedTab == 'notification' ? Colors.white : const Color(0xFFA5A5A5),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -130,18 +140,15 @@ class HealthScreenState extends State<HealthScreen> {
                         children: [
                           Icon(Icons.info_outline,
                               size: 20,
-                              color: _selectedTab == 'information'
-                                  ? Colors.white
-                                  : const Color(0xFFA5A5A5)),
+                              color: _selectedTab == 'information' ? Colors.white : const Color(0xFFA5A5A5)),
                           const SizedBox(width: 6),
                           Text('Information',
                               style: TextStyle(
                                 fontFamily: 'Fredoka',
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: _selectedTab == 'information'
-                                    ? Colors.white
-                                    : const Color(0xFFA5A5A5),
+                                color:
+                                    _selectedTab == 'information' ? Colors.white : const Color(0xFFA5A5A5),
                               )),
                         ],
                       ),
@@ -152,7 +159,7 @@ class HealthScreenState extends State<HealthScreen> {
             ),
           ),
 
-          //Content
+          // Content
           Expanded(
             child: _selectedTab == 'information'
                 ? SingleChildScrollView(
@@ -166,7 +173,6 @@ class HealthScreenState extends State<HealthScreen> {
     );
   }
 
-  //Notification
   Widget _buildNotificationContent() {
     if (remindersList.isEmpty) {
       return const Center(
@@ -207,53 +213,70 @@ class HealthScreenState extends State<HealthScreen> {
                         Expanded(
                           child: Text(
                             item['title'] ?? 'Title',
-                            style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 18, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                fontFamily: 'Fredoka',
+                                color: textBlueColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600),
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => _deleteReminder(index), 
+                          onTap: () => _deleteReminder(index),
                           child: const Icon(Icons.delete_outline, color: Color(0xFFFF4D4F), size: 22),
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
-
-                    // ── 4. เอาคำว่า 'Sora' ออก แล้วใส่ชื่อที่รับค่ามาจาก Add Screen ──
                     Text(
-                      item['name'] ?? 'My Pet', 
-                      style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor.withOpacity(0.8), fontSize: 14)
+                      item['name'] ?? 'My Pet',
+                      style: TextStyle(
+                          fontFamily: 'Fredoka', color: textBlueColor.withOpacity(0.8), fontSize: 14),
                     ),
-                    
                     const SizedBox(height: 10),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFFA1E4F8), borderRadius: BorderRadius.circular(10)),
+                          decoration: BoxDecoration(
+                              color: const Color(0xFFA1E4F8),
+                              borderRadius: BorderRadius.circular(10)),
                           child: Row(
                             children: [
                               Icon(Icons.calendar_today_outlined, size: 14, color: textBlueColor),
                               const SizedBox(width: 4),
-                              Text(item['date'] ?? '4 Feb 2026', style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 12, fontWeight: FontWeight.w500)),
+                              Text(item['date'] ?? '4 Feb 2026',
+                                  style: TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      color: textBlueColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500)),
                             ],
                           ),
                         ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFFE2DEE0), borderRadius: BorderRadius.circular(10)),
+                          decoration: BoxDecoration(
+                              color: const Color(0xFFE2DEE0),
+                              borderRadius: BorderRadius.circular(10)),
                           child: Row(
                             children: [
                               const Icon(Icons.access_time, size: 14, color: Color(0xFF8B8B8B)),
                               const SizedBox(width: 4),
-                              Text(item['time'] ?? '10:00 AM', style: const TextStyle(fontFamily: 'Fredoka', color: Color(0xFF8B8B8B), fontSize: 12, fontWeight: FontWeight.w500)),
+                              Text(item['time'] ?? '10:00 AM',
+                                  style: const TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      color: Color(0xFF8B8B8B),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500)),
                             ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text('Location: ${item['location'] ?? 'No location'}', style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 14)),
+                    Text('Location: ${item['location'] ?? 'No location'}',
+                        style: TextStyle(fontFamily: 'Fredoka', color: textBlueColor, fontSize: 14)),
                   ],
                 ),
               ),
@@ -264,7 +287,6 @@ class HealthScreenState extends State<HealthScreen> {
     );
   }
 
-  //Information
   Widget _buildInformationContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,25 +296,41 @@ class HealthScreenState extends State<HealthScreen> {
         const _CareTipCard(
           icon: Icons.restaurant,
           title: 'Proper Feeding',
-          tips: ['Feed according to your pet\'s age and appropriate weight', 'Divide meals into 2–3 times per day', 'Avoid foods that are toxic to pets'],
+          tips: [
+            'Feed according to your pet\'s age and appropriate weight',
+            'Divide meals into 2–3 times per day',
+            'Avoid foods that are toxic to pets'
+          ],
         ),
         const SizedBox(height: 10),
         const _CareTipCard(
           icon: Icons.fitness_center,
           title: 'Exercise',
-          tips: ['Take your pet for a walk 30–60 minutes per day', 'Provide playtime and mental stimulation', 'Adjust exercise level according to age'],
+          tips: [
+            'Take your pet for a walk 30–60 minutes per day',
+            'Provide playtime and mental stimulation',
+            'Adjust exercise level according to age'
+          ],
         ),
         const SizedBox(height: 10),
         const _CareTipCard(
           icon: Icons.clean_hands_outlined,
           title: 'Hygiene Care',
-          tips: ['Bathe your pet every 1–2 weeks', 'Brush fur daily to prevent tangles', 'Trim nails and clean ears regularly'],
+          tips: [
+            'Bathe your pet every 1–2 weeks',
+            'Brush fur daily to prevent tangles',
+            'Trim nails and clean ears regularly'
+          ],
         ),
         const SizedBox(height: 10),
         const _CareTipCard(
           icon: Icons.monitor_heart_outlined,
           title: 'Health Check',
-          tips: ['Take your pet for a health check at least once a year', 'Vaccinate and deworm according to schedule', 'Observe behavior and watch for unusual symptoms'],
+          tips: [
+            'Take your pet for a health check at least once a year',
+            'Vaccinate and deworm according to schedule',
+            'Observe behavior and watch for unusual symptoms'
+          ],
         ),
         const SizedBox(height: 24),
         const _SectionHeader(icon: Icons.medical_services, iconColor: Colors.red, title: 'Basic First Aid'),
@@ -300,13 +338,22 @@ class HealthScreenState extends State<HealthScreen> {
         const _CareTipCard(
           icon: Icons.pets,
           title: 'Pet Choking',
-          tips: ['Take your pet for a health check at least once a year', 'Vaccinate and deworm according to schedule', 'Observe behavior and watch for unusual symptoms'],
+          tips: [
+            'Take your pet for a health check at least once a year',
+            'Vaccinate and deworm according to schedule',
+            'Observe behavior and watch for unusual symptoms'
+          ],
         ),
         const SizedBox(height: 10),
         const _CareTipCard(
           icon: Icons.healing_outlined,
           title: 'Bite Wound',
-          tips: ['Gently clean the wound with clean water', 'Stop the bleeding with a clean cloth', 'Do not use medicine or alcohol', 'Take your pet to the veterinarian for examination'],
+          tips: [
+            'Gently clean the wound with clean water',
+            'Stop the bleeding with a clean cloth',
+            'Do not use medicine or alcohol',
+            'Take your pet to the veterinarian for examination'
+          ],
           hasNote: true,
           noteText: 'Do not use medicine or alcohol',
         ),
@@ -314,7 +361,12 @@ class HealthScreenState extends State<HealthScreen> {
         const _CareTipCard(
           icon: Icons.search,
           title: 'Swallowed a Foreign Object',
-          tips: ['Do not try to make your pet vomit', 'Keep the object (if possible) to show the vet', 'Observe symptoms and behavior', 'Contact a veterinarian immediately'],
+          tips: [
+            'Do not try to make your pet vomit',
+            'Keep the object (if possible) to show the vet',
+            'Observe symptoms and behavior',
+            'Contact a veterinarian immediately'
+          ],
         ),
         const SizedBox(height: 24),
       ],
@@ -334,7 +386,9 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Icon(icon, color: iconColor, size: 26),
         const SizedBox(width: 6),
-        Text(title, style: const TextStyle(fontFamily: 'Fredoka', fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(title,
+            style: const TextStyle(
+                fontFamily: 'Fredoka', fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
       ],
     );
   }
@@ -346,15 +400,18 @@ class _CareTipCard extends StatelessWidget {
   final List<String> tips;
   final bool hasNote;
   final String? noteText;
-  const _CareTipCard({required this.icon, required this.title, required this.tips, this.hasNote = false, this.noteText});
+  const _CareTipCard(
+      {required this.icon, required this.title, required this.tips, this.hasNote = false, this.noteText});
 
   @override
   Widget build(BuildContext context) {
-    final bulletTips = hasNote && noteText != null ? tips.where((t) => t != noteText).toList() : tips;
+    final bulletTips =
+        hasNote && noteText != null ? tips.where((t) => t != noteText).toList() : tips;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-      decoration: BoxDecoration(color: const Color(0xFFEEF3F6), borderRadius: BorderRadius.circular(18)),
+      decoration:
+          BoxDecoration(color: const Color(0xFFEEF3F6), borderRadius: BorderRadius.circular(18)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -362,7 +419,12 @@ class _CareTipCard extends StatelessWidget {
             children: [
               Icon(icon, color: const Color(0xFF2B4A8B), size: 20),
               const SizedBox(width: 8),
-              Text(title, style: const TextStyle(fontFamily: 'Fredoka', fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2B4A8B))),
+              Text(title,
+                  style: const TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2B4A8B))),
             ],
           ),
           const SizedBox(height: 10),
@@ -373,7 +435,13 @@ class _CareTipCard extends StatelessWidget {
                   children: [
                     const Text('•  ', style: TextStyle(fontSize: 14, color: Color(0xFF2B4A8B))),
                     Expanded(
-                      child: Text(tip, style: const TextStyle(fontFamily: 'Fredoka', fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2B4A8B), height: 1.4)),
+                      child: Text(tip,
+                          style: const TextStyle(
+                              fontFamily: 'Fredoka',
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2B4A8B),
+                              height: 1.4)),
                     ),
                   ],
                 ),
@@ -382,7 +450,13 @@ class _CareTipCard extends StatelessWidget {
             const SizedBox(height: 2),
             Padding(
               padding: const EdgeInsets.only(left: 16),
-              child: Text(noteText!, style: const TextStyle(fontFamily: 'Fredoka', fontSize: 13.5, fontWeight: FontWeight.bold, color: Color(0xFF2B4A8B), height: 1.4)),
+              child: Text(noteText!,
+                  style: const TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2B4A8B),
+                      height: 1.4)),
             ),
           ],
         ],

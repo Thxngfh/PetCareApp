@@ -5,82 +5,80 @@ import 'package:pethug/screens/health.dart';
 import 'package:pethug/screens/consult.dart';
 import 'package:pethug/screens/me.dart';
 import 'package:pethug/screens/add_reminder.dart';
-import 'package:pethug/screens/add_pet.dart'; 
+import 'package:pethug/screens/add_pet.dart';
 
 void main() {
   runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false, 
-    home: MainScreen(userEmail: 'thongfahlukpear@gmail.com'), 
+    debugShowCheckedModeBanner: false,
+    home: MainScreen(userEmail: 'thongfahlukpear@gmail.com'),
   ));
 }
 
 class MainScreen extends StatefulWidget {
-  final String userEmail; 
-  final int initialIndex; // 🌟 1. เพิ่มบรรทัดนี้
+  final String userEmail;
+  final int initialIndex;
 
-  // 🌟 2. เพิ่ม this.initialIndex = 0 ในนี้
-  const MainScreen({super.key, this.userEmail = '', this.initialIndex = 0}); 
+  const MainScreen({super.key, this.userEmail = '', this.initialIndex = 0});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
-  late int _selectedIndex; 
+  late int _selectedIndex;
   late AnimationController _animController;
   late Animation<double> _circleAnim;
   final Color appBlueColor = const Color(0xFF8FE7FF);
-  
-  // สร้าง GlobalKey เพื่อดึงข้อมูลจากหน้าต่างๆ
+
   final GlobalKey<PetScreenState> _petKey = GlobalKey<PetScreenState>();
   final GlobalKey<DiaryScreenState> _diaryKey = GlobalKey<DiaryScreenState>();
-  final GlobalKey<HealthScreenState> _healthKey = GlobalKey<HealthScreenState>(); 
-  
-  // ตัวแปรเก็บจำนวนต่างๆ
-  int notificationCount = 0;
-  int petCount = 0; 
-  int healthRecordCount = 0; 
-  // 🌟 ลบตัวแปร photoCount = 5; ออกไปแล้วครับ เพราะเราจะใช้การนับของจริงแทน
+  final GlobalKey<HealthScreenState> _healthKey = GlobalKey<HealthScreenState>();
 
-  // สร้าง List ของหน้าจอและส่งตัวแปรเข้าไป
+  int notificationCount = 0;
+  int petCount = 0;
+  int healthRecordCount = 0;
+
   List<Widget> get _pages => [
-    PetScreen(
-      key: _petKey,
-      onPetDataChanged: () => setState(() {}), 
-    ),
-    DiaryScreen(key: _diaryKey),
-    HealthScreen(
-      key: _healthKey,
-      onReminderDeleted: () {
-        setState(() {
-          if (notificationCount > 0) notificationCount--; 
-          if (healthRecordCount > 0) healthRecordCount--; 
-        });
-      },
-    ),
-    const ConsultScreen(),
-    MeScreen(
-      email: widget.userEmail, 
-      petCount: petCount, 
-      healthRecordCount: healthRecordCount,
-      // 🌟 ดึงค่าจากฟังก์ชันนับรูปภาพจริงในหน้า Diary มาใส่!
-      photoCount: _diaryKey.currentState?.getRealPhotoCount() ?? 0, 
-    ), 
-  ];
+        PetScreen(
+          key: _petKey,
+          onPetDataChanged: () => setState(() {}),
+        ),
+        DiaryScreen(key: _diaryKey),
+        HealthScreen(
+          key: _healthKey,
+          // ลด counter เมื่อลบ
+          onReminderDeleted: () {
+            setState(() {
+              if (notificationCount > 0) notificationCount--;
+              if (healthRecordCount > 0) healthRecordCount--;
+            });
+          },
+          // รับข้อมูล reminder ที่ลบแล้วไปลบออกจาก Pet ด้วย
+          onReminderDeletedData: (deletedReminder) {
+            _petKey.currentState?.removeReminderFromActivePet(deletedReminder);
+          },
+        ),
+        const ConsultScreen(),
+        MeScreen(
+          email: widget.userEmail,
+          petCount: petCount,
+          healthRecordCount: healthRecordCount,
+          photoCount: _diaryKey.currentState?.getRealPhotoCount() ?? 0,
+        ),
+      ];
 
   @override
   void initState() {
     super.initState();
-    // 🌟 4. ดึงค่าจาก widget มาใส่ให้ _selectedIndex ตอนเริ่มต้น
-    _selectedIndex = widget.initialIndex; 
-    
+    _selectedIndex = widget.initialIndex;
+
     _animController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _circleAnim = Tween<double>(begin: _selectedIndex.toDouble(), end: _selectedIndex.toDouble()).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
-    );
+    _circleAnim = Tween<double>(
+            begin: _selectedIndex.toDouble(), end: _selectedIndex.toDouble())
+        .animate(CurvedAnimation(parent: _animController, curve: Curves.easeInOut));
   }
 
   @override
@@ -111,15 +109,12 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              displayName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Fredoka',
-                fontSize: 24,
-              ),
-            ),
+            Text(displayName,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Fredoka',
+                    fontSize: 24)),
             if (hasPet) ...[
               const SizedBox(width: 4),
               const Icon(Icons.arrow_drop_down, color: Colors.white, size: 28),
@@ -130,15 +125,9 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     }
 
     const titles = ['Pet', 'Diary', 'Health', 'Consult', 'Me'];
-    return Text(
-      titles[_selectedIndex],
-      style: const TextStyle(
-        color: Colors.white, 
-        fontWeight: FontWeight.bold, 
-        fontFamily: 'Fredoka', 
-        fontSize: 24
-      ),
-    );
+    return Text(titles[_selectedIndex],
+        style: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Fredoka', fontSize: 24));
   }
 
   @override
@@ -153,7 +142,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           children: [
             IconButton(
               icon: const Icon(Icons.notifications_none, color: Colors.white, size: 28),
-              onPressed: () {setState(() => _selectedIndex = 2);},
+              onPressed: () => setState(() => _selectedIndex = 2),
             ),
             if (notificationCount > 0)
               Positioned(
@@ -162,10 +151,9 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(color: Color(0xFFFF4D4F), shape: BoxShape.circle),
-                  child: Text(
-                    '$notificationCount',
-                    style: const TextStyle(fontFamily: 'Fredoka', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
+                  child: Text('$notificationCount',
+                      style: const TextStyle(
+                          fontFamily: 'Fredoka', color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
               ),
           ],
@@ -181,7 +169,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
               decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.add, color: Colors.black87, size: 26), 
+                icon: const Icon(Icons.add, color: Colors.black87, size: 26),
                 onPressed: () async {
                   if (_selectedIndex == 0) {
                     final result = await Navigator.push(
@@ -190,33 +178,33 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                     );
                     if (result != null && result is Map<String, dynamic>) {
                       _petKey.currentState?.addPet(result);
-                      setState(() {
-                        petCount++; 
-                      }); 
+                      setState(() => petCount++);
                     }
-                  } 
-                  else if (_selectedIndex == 1) {
+                  } else if (_selectedIndex == 1) {
                     final diaryState = _diaryKey.currentState;
                     if (diaryState == null) return;
-                    
                     if (diaryState.currentTab == 0) {
-                      // 🌟 ลบ await ออกแล้ว จะได้ไม่แดง และไม่ต้องมีตัวบวกเลข photoCount แล้วครับ
-                      diaryState.goToNewDiary(); 
+                      diaryState.goToNewDiary();
                     } else {
                       diaryState.goToNewExpense();
                     }
-                  } 
-                  else if (_selectedIndex == 2) {
+                  } else if (_selectedIndex == 2) {
                     final result = await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const AddReminderScreen()),
                     );
-                    if (result != null) {
+                    if (result != null && result is Map<String, dynamic>) {
                       setState(() {
                         notificationCount++;
-                        healthRecordCount++; 
-                      }); 
-                      _healthKey.currentState?.addReminder(result as Map<String, dynamic>);
+                        healthRecordCount++;
+                      });
+                      // ส่งไป Health.dart
+                      _healthKey.currentState?.addReminder(result);
+                      // ส่งไป Pet.dart (Upcoming Reminder)
+                      final petState = _petKey.currentState;
+                      if (petState != null && petState.hasPetData) {
+                        petState.addReminderToActivePet(result);
+                      }
                     }
                   }
                 },
@@ -242,7 +230,8 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                       child: Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(color: Color(0xFFFFC0CB), shape: BoxShape.circle),
+                        decoration:
+                            const BoxDecoration(color: Color(0xFFFFC0CB), shape: BoxShape.circle),
                       ),
                     );
                   },
@@ -275,15 +264,12 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           children: [
             Icon(icon, color: Colors.white, size: isSelected ? 26 : 22),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Fredoka',
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
+            Text(label,
+                style: TextStyle(
+                    fontFamily: 'Fredoka',
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
           ],
         ),
       ),
